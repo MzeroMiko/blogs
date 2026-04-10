@@ -3,6 +3,7 @@ site_url: https://mzeromiko.github.io/blogs/
 
 theme:
   name: material
+  custom_dir: overrides
   language: en
   icon:
     logo: material/book-open-page-variant
@@ -53,3 +54,14 @@ extra_javascript:
 
 plugins:
   - search
+  - tags
+  - i18n:
+      docs_structure: suffix
+      languages: 
+        - locale: en
+          default: true
+          name: English
+          build: true   
+        - locale: zh
+          name: 简体中文
+          build: true
