@@ -1,0 +1,706 @@
+---
+date: 2026-04-07
+categories:
+    - Linear Attention
+---
+# Parallelizing Linear Transformers with the Delta Rule over Sequence Length
+
+> **原文链接**：[https://arxiv.org/abs/2406.06484](https://arxiv.org/abs/2406.06484)
+>
+> **代码链接**：[https://github.com/fla-org/flash-linear-attention](https://github.com/fla-org/flash-linear-attention/)
+>
+> **笔记链接**：[https://mzeromiko.github.io/blogs](https://mzeromiko.github.io/blogs/Linear_Attention/deltanet/deltanet/)
+>
+> **声明**：本文为个人阅读笔记。所有来自我自己的推导都可能存在错误，后续需要对照代码进行交叉验证。
+
+
+【***评论***：请注意，所有来自我自己的推导都可能有错，之后看代码需要交叉验证。】
+
+## Motivation
+1. 大部分Linear attention模型不如trasformer，尤其在需要In-context retrieval的时候
+2. Delta Rule训练不高效
+
+## Notations
+1. 采用 $\mathbf{S, Q}$ 等表示矩阵
+2. 采用$\mathbf{q}_t, \mathbf{k}_t$等表示**列向量** （[d, 1]的版本） ，矩阵则是[L, d]的版本，所以会有额外转置。
+3. 采用$W_t$等表示可学习参数
+4. 采用$\mathbf{q}_t$表示$\mathbf{Q}$的第$t$行
+
+
+## Background
+1. GLA
+
+$$\begin{aligned}
+\mathbf{O} = (\mathbf{Q}\mathbf{K}^\top \odot \mathbf{M}) \mathbf{V} 
+\Leftrightarrow 
+\boldsymbol{o}_r = \sum_{i=1}^r \boldsymbol{v}_i \boldsymbol{k}_i^\top \boldsymbol{q}_r 
+\end{aligned}$$
+
+2. DeltaNet, DeltaNet 可以被视作SGD Optimizer
+
+
+
+## Parallelizing DeltaNet 
+
+### Forward
+
+【***评论***：推理目标是尽量减少显存占用，并多使用矩阵运算】
+
+【***评论***：假设前人没做过，那么公式推导中的难点在于householder与ut变换。其中householder是硬伤，ut变换只要对linear attention比较熟就可以立即想到。】
+
+回顾deltanet公式
+
+$$\begin{aligned}
+\mathbf{S}_t 
+&= 
+\mathbf{S}_{t-1} - \boldsymbol{v}_t^{\text{old}} \boldsymbol{k}_t^\top + \boldsymbol{v}_t^{\text{new}} \boldsymbol{k}_t^\top 
+\\&= 
+\mathbf{S}_{t-1} - \beta_t (\mathbf{S}_{t-1} \boldsymbol{k}_t) \boldsymbol{k}_t^\top + \beta_t \boldsymbol{v}_t \boldsymbol{k}_t^\top 
+\\&= 
+\mathbf{S}_{t-1}(\mathbf{I} - \beta_t \boldsymbol{k}_t \boldsymbol{k}_t^\top) + \beta_t \boldsymbol{v}_t \boldsymbol{k}_t^\top
+\end{aligned}$$
+
+仿照GLA，我们定义
+
+$$\begin{aligned}
+\square_{[t]} &= \square_{[t]}^{1:C} \in \mathbb{R}^{C \times d} \quad\text{for}\quad \square \in \{ \mathbf{Q, K, V,...} \}
+\\
+\\
+\mathbf{P}_{[t]}^{r} &= \prod_{i=t C + 1}^{t C + r}(\mathbf{I} - \beta_{i} \boldsymbol{k}_{i} \boldsymbol{k}_{i}^{\top}) 
+\in \mathbb{R}^{d \times d}
+,\quad 
+\mathbf{H}_{[t]}^{r} = \sum_{i=tC + 1}^{tC + r} \beta_{i} (\boldsymbol{v}_{i} \boldsymbol{k}_{i}^{\top}) 
+\left(
+\prod_{j=i + 1}^{t C + r}(\mathbf{I} - \beta_{j} \boldsymbol{k}_{j} \boldsymbol{k}_{j}^{\top}) 
+\right)
+\in \mathbb{R}^{d \times d}
+\end{aligned}$$
+
+则有
+
+$$\begin{aligned}
+\mathbf{S}_{[t]}^{r} 
+= 
+\mathbf{S}_{[t-1]}^{C} \mathbf{P}_{[t]}^{r}  + \mathbf{H}_{[t]}^{r}
+, \quad
+\text{where }
+\mathbf{S}_{[-1]}^{C} = \mathbf{0}
+\end{aligned}$$
+
+另一方面，假设
+
+$$\begin{aligned}
+\boldsymbol{u}_1 = \beta_1 \boldsymbol{v}_1 , \quad \mathbf{S}_1 = \beta_1 \boldsymbol{v}_1 \boldsymbol{k}_1^\top
+\end{aligned}$$
+
+
+那么利用数学归纳法可得
+
+$$\begin{aligned}
+\mathbf{S}_t = \mathbf{S}_{t-1}  + \beta_t (\boldsymbol{v}_t - \mathbf{S}_{t-1} \boldsymbol{k}_t )\boldsymbol{k}_t^\top 
+= 
+\sum_{i=1}^{t-1} \boldsymbol{u}_i \boldsymbol{k}_i^\top 
++ 
+\underbrace{\beta_t \left( \boldsymbol{v}_t - \sum_{i=1}^{t-1} \boldsymbol{u}_i (\boldsymbol{k}_i^\top \boldsymbol{k}_t) \right)}_{\text{defined as } \boldsymbol{u}_t} \boldsymbol{k}_t^\top 
+= 
+\sum_{i=1}^{t} \boldsymbol{u}_i \boldsymbol{k}_i^\top
+\end{aligned}$$
+
+因此
+
+$$\begin{aligned}
+\mathbf{H}_{[t]}^{r} = 
+\sum_{i=1}^{r} \boldsymbol{u}_{[t]}^{i} \boldsymbol{k}_{[t]}^{i\top}
+, \quad 
+\boldsymbol{u}_{[t]}^{r} = \beta_{[t]}^{r} \left( \boldsymbol{v}_{[t]}^{r} - \sum_{i=1}^{r-1} \boldsymbol{u}_{[t]}^{i} \boldsymbol{k}_{[t]}^{i \top} \boldsymbol{k}_{[t]}^{r} \right)
+\end{aligned}$$
+
+另一方面，Householder 变换（形如($\mathbf{I} - \beta_{t} \boldsymbol{k}_{t} \boldsymbol{k}_{t}^{\top}$)）的积一定可以表示成低秩模式（WY Representation），我们不妨假设
+
+$$\begin{aligned}
+\mathbf{P}_{[t]}^{r} = \mathbf{I} - \sum_{i=1}^{r} \boldsymbol{w}_{[t]}^{i} \boldsymbol{k}_{[t]}^{i \top}
+\end{aligned}$$
+
+于是利用数学归纳法可得：
+
+$$\begin{aligned}
+\mathbf{P}_{[t]}^{r} 
+= 
+(\mathbf{I} - \sum_{i=1}^{r - 1} \boldsymbol{w}_{[t]}^{i} \boldsymbol{k}_{[t]}^{i \top}) (\mathbf{I} - \beta_{[t]}^{r} \boldsymbol{k}_{[t]}^{r} \boldsymbol{k}_{[t]}^{r \top}) 
+=
+\mathbf{I} - \sum_{i=1}^{r - 1} \boldsymbol{w}_{[t]}^{i} \boldsymbol{k}_{[t]}^{i \top} 
+- 
+\underbrace{\beta_{[t]}^{r} \left(\boldsymbol{k}_{[t]}^{r}
+-
+\sum_{i=1}^{r - 1} \boldsymbol{w}_{[t]}^{i} \boldsymbol{k}_{[t]}^{i \top}  \boldsymbol{k}_{[t]}^{r}  \right) }_{\text{defined as } \boldsymbol{w}_{[t]}^{r}}
+\boldsymbol{k}_{[t]}^{r \top}
+\end{aligned}$$ 
+
+于是
+
+$$\begin{aligned}
+\mathbf{P}_{[t]}^{r} = \mathbf{I} - \sum_{i=1}^{r} \boldsymbol{w}_{[t]}^{i} \boldsymbol{k}_{[t]}^{i \top}
+， \quad
+\boldsymbol{w}_{[t]}^{r} = \beta_{[t]}^{r} \left( \boldsymbol{k}_{[t]}^{r} - \sum_{i=1}^{r-1} \boldsymbol{w}_{[t]}^{i} \boldsymbol{k}_{[t]}^{i \top} \boldsymbol{k}_{[t]}^{r} \right)
+\end{aligned}$$
+
+进一步
+
+$$\begin{aligned}
+\mathbf{S}_{[t]}^{r} 
+&= 
+\mathbf{S}_{[t-1]}^{C} \left(\mathbf{I} - \sum_{i=1}^{r} \boldsymbol{w}_{[t]}^{i} \boldsymbol{k}_{[t]}^{i \top}\right)  
++ 
+\sum_{i=1}^{r} \boldsymbol{u}_{[t]}^{i} \boldsymbol{k}_{[t]}^{i\top}
+=
+\mathbf{S}_{[t-1]}^{C}
++ 
+\sum_{i=1}^{r} \left(\boldsymbol{u}_{[t]}^{i} - \mathbf{S}_{[t-1]}^{C} \boldsymbol{w}_{[t]}^{i}  \right)\boldsymbol{k}_{[t]}^{i\top}
+\\
+\\
+\boldsymbol{o}_{[t]}^{r}
+&=
+\mathbf{S}_{[t]}^{r} \boldsymbol{q}_{[t]}^{r}
+=
+\mathbf{S}_{[t-1]}^{C}  \boldsymbol{q}_{[t]}^{r}
++ 
+\sum_{i=1}^{r} \left(\boldsymbol{u}_{[t]}^{i} - \mathbf{S}_{[t-1]}^{C} \boldsymbol{w}_{[t]}^{i}  \right)\boldsymbol{k}_{[t]}^{i\top}  \boldsymbol{q}_{[t]}^{r}
+\end{aligned}$$
+
+
+于是，我们可以得到矩阵形式
+
+$$\begin{aligned}
+\mathbf{S}_{[t]}^{C} 
+&=
+\mathbf{S}_{[t-1]}^{C}
++
+\left(\mathbf{U}_{[t]}^\top - \mathbf{S}_{[t-1]}^{C} \mathbf{W}_{[t]}^\top  \right)\mathbf{K}_{[t]}
+\\
+\\
+\mathbf{O}_{[t]}
+&=
+\mathbf{Q}_{[t]} \mathbf{S}_{[t-1]}^{C \top}  
++
+\left( \mathbf{Q}_{[t]} \mathbf{K}_{[t]}^\top \odot \mathbf{M} \right)  \left(\mathbf{U}_{[t]} - \mathbf{W}_{[t]} \mathbf{S}_{[t-1]}^{C \top} \right)
+\end{aligned}$$
+
+接着，我们来处理$\boldsymbol{u}_{[t]}, \boldsymbol{w}_{[t]}$, 其中 $\mathbf{M}_{-1} = \mathbf{M} - \mathbf{I}$ 表示对角线元素为0的下三角掩码矩阵。
+
+$$\begin{aligned}
+& \boldsymbol{u}_{[t]}^{r} = \beta_{[t]}^{r} \left( \boldsymbol{v}_{[t]}^{r} - \sum_{i=1}^{r-1} \boldsymbol{u}_{[t]}^{i} \boldsymbol{k}_{[t]}^{i \top} \boldsymbol{k}_{[t]}^{r} \right)
+\\
+\\
+\Rightarrow &
+\mathbf{U}_{[t]} 
+= 
+\text{Diag}(\boldsymbol{\beta}_{[t]}) \mathbf{V}_{[t]} 
+-
+\text{Diag}(\boldsymbol{\beta}_{[t]}) \left( \mathbf{K}_{[t]} \mathbf{K}_{[t]}^\top \odot \mathbf{M}_{-1}  \right) \mathbf{U}_{[t]} 
+\\
+\\
+\Rightarrow &
+\left(\mathbf{I} + \text{Diag}(\boldsymbol{\beta}_{[t]}) \left( \mathbf{K}_{[t]} \mathbf{K}_{[t]}^\top \odot \mathbf{M}_{-1}  \right) \right) \mathbf{U}_{[t]} 
+= \text{Diag}(\boldsymbol{\beta}_{[t]}) \mathbf{V}_{[t]} 
+\\
+\\
+\Rightarrow &
+\mathbf{U}_{[t]} 
+= 
+\left(\mathbf{I} + \text{Diag}(\boldsymbol{\beta}_{[t]}) \left( \mathbf{K}_{[t]} \mathbf{K}_{[t]}^\top \odot \mathbf{M}_{-1}  \right) \right)^{-1} \text{Diag}(\boldsymbol{\beta}_{[t]}) \mathbf{V}_{[t]} 
+\end{aligned}$$
+
+同理
+
+$$\begin{aligned}
+\mathbf{W}_{[t]} 
+= 
+\left(\mathbf{I} + \text{Diag}(\boldsymbol{\beta}_{[t]}) \left( \mathbf{K}_{[t]} \mathbf{K}_{[t]}^\top \odot \mathbf{M}_{-1}  \right) \right)^{-1} \text{Diag}(\boldsymbol{\beta}_{[t]}) \mathbf{K}_{[t]} 
+\end{aligned}$$
+
+因此，要求$\mathbf{U}_{[t]},\mathbf{W}_{[t]}$，重点在求
+
+$$\begin{aligned}
+\mathbf{T}_{[t]} 
+= 
+\left(\mathbf{I} + \text{Diag}(\boldsymbol{\beta}_{[t]}) \left( \mathbf{K}_{[t]} \mathbf{K}_{[t]}^\top \odot \mathbf{M}_{-1}  \right) \right)^{-1} \text{Diag}(\boldsymbol{\beta}_{[t]})
+\end{aligned}$$
+
+
+### Inversion of Unit Lower Triangular Matrices
+
+本小节我们来看$\mathbf{T}_{[t]}$的求解。更一般，形如$\mathbf{A} = \mathbf{I} + \mathbf{L} \in \mathbb{R}^{N \times N}$的单位下三角阵的求解。流程上，我们可以先对矩阵进行分块，然后对每一块采用`Neumann 级数`配合`倍增法`求逆。
+
+***Neumann 级数***
+
+$$\begin{aligned}
+(\mathbf{I} + \mathbf{L})^{-1}
+= 
+\sum_{n=0}^{\infty} (- \mathbf{L})^n
+\end{aligned}$$
+
+由于严格下三角矩阵$\mathbf{L}$ 具有幂零的性质，也就是
+
+$$\begin{aligned}
+\mathbf{L}^{C} = \mathbf{0} \quad \forall~ C \gt N  
+\end{aligned}$$
+
+因此有
+
+$$\begin{aligned}
+(\mathbf{I} + \mathbf{L})^{-1}
+= 
+\sum_{n=0}^{N - 1} (- \mathbf{L})^n
+\end{aligned}$$
+
+***倍增法***
+
+定义
+
+$$\begin{aligned}
+\mathbf{S}_{k} = \sum_{n=0}^{2^k-1} (- \mathbf{L})^n
+, \quad
+\mathbf{G}_{k} = (- \mathbf{L})^{2^k}
+\end{aligned}$$
+
+则有
+
+$$\begin{aligned}
+\mathbf{S}_{k+1} = \mathbf{S}_{k+1}(\mathbf{I} + \mathbf{G}_{k})
+, \quad
+\mathbf{G}_{k+1} = \mathbf{G}_{k} \mathbf{G}_{k}
+\end{aligned}$$
+
+***分块矩阵求逆1***
+
+$$\begin{aligned}
+\begin{pmatrix}
+\mathbf{A}_{11} & \mathbf{0} \\
+\mathbf{A}_{21} & \mathbf{A}_{22}
+\end{pmatrix}
+\begin{pmatrix}
+\mathbf{A}_{11}^{-1} & \mathbf{0} \\
+-\mathbf{A}_{22}^{-1} \mathbf{A}_{21} \mathbf{A}_{11}^{-1} & \mathbf{A}_{22}^{-1}
+\end{pmatrix}
+=
+\begin{pmatrix}
+\mathbf{I} & \mathbf{0} \\
+\mathbf{0} & \mathbf{I}
+\end{pmatrix}
+\end{aligned}$$
+
+***分块矩阵求逆2***
+
+假设 $\mathbf{A}\mathbf{B}=\mathbf{I}$ ，其中 $\mathbf{A}$ 为分块下三角矩阵，则有 $\mathbf{B}$ 也为分块下三角矩阵，且
+
+$$\begin{aligned}
+\mathbf{B}_{ij} = -\mathbf{A}_{ii}^{-1} \sum_{k=j}^{i-1} \mathbf{A}_{ik} \mathbf{B}_{kj}
+, \quad i \gt j
+\end{aligned}$$
+
+
+
+### Mathematical Preliminaries
+
+除去在GLA的笔记中补充的，这边还涉及到逆矩阵的微分
+
+$$\begin{aligned}
+& \mathbf{A} = \mathbf{B}^{-1}
+\Rightarrow 
+d \mathbf{A} = - \mathbf{B}^{-1} (d \mathbf{B}) \mathbf{B}^{-1}
+\\
+\\
+\Rightarrow &
+dy = \text{Tr}\left((\delta \mathbf{A})^\top (d \mathbf{A})\right) 
+= \text{Tr}\left(-(\delta \mathbf{A})^\top \mathbf{B}^{-1} (d \mathbf{B}) \mathbf{B}^{-1}\right) 
+= \text{Tr}\left(- \mathbf{B}^{-1} (\delta \mathbf{A})^\top \mathbf{B}^{-1} (d \mathbf{B}) \right) 
+\\
+\\
+\Rightarrow &
+\delta \mathbf{B} = - \mathbf{B}^{-1 \top} (\delta \mathbf{A}) \mathbf{B}^{-1 \top} 
+= - \mathbf{A}^\top (\delta \mathbf{A}) \mathbf{A}^\top 
+\end{aligned}$$
+
+以及转置公式
+$$\begin{aligned}
+\text{diag}\left(\mathbf{A} \left(\mathbf{B} \odot \mathbf{C}\right)^\top \right)
+=
+\text{diag}\left(\left(\mathbf{A} \odot \mathbf{C}\right) \mathbf{B}^\top \right)
+\end{aligned}$$
+
+
+### Backward
+
+回顾前向传播
+
+$$\begin{aligned}
+\mathbf{V}_{[t],new} &:= \left(\mathbf{U}_{[t]} - \mathbf{W}_{[t]} \mathbf{S}_{[t-1]}^{C \top}  \right) 
+\\
+\\
+\mathbf{S}_{[t]}^{C} 
+&=
+\mathbf{S}_{[t-1]}^{C}
++
+\mathbf{V}_{[t],new}^\top\mathbf{K}_{[t]}
+\\
+\\
+\mathbf{O}_{[t]}
+&=
+\mathbf{Q}_{[t]} \mathbf{S}_{[t-1]}^{C \top}  
++
+\left( \mathbf{Q}_{[t]} \mathbf{K}_{[t]}^\top \odot \mathbf{M} \right)  \mathbf{V}_{[t],new}
+\\
+\\
+\mathbf{W}_{[t]} &= \mathbf{T}_{[t]} \mathbf{K}_{[t]} 
+,\quad
+\mathbf{U}_{[t]} = \mathbf{T}_{[t]} \mathbf{V}_{[t]} 
+\\
+\\
+\mathbf{X}_{[t]} &= \mathbf{I} + \text{Diag}(\boldsymbol{\beta}_{[t]}) \left( \mathbf{K}_{[t]} \mathbf{K}_{[t]}^\top \odot \mathbf{M}_{-1}  \right)
+\\
+\\
+\mathbf{T}_{[t]} 
+&= 
+\left(\mathbf{I} + \text{Diag}(\boldsymbol{\beta}_{[t]}) \left( \mathbf{K}_{[t]} \mathbf{K}_{[t]}^\top \odot \mathbf{M}_{-1}  \right) \right)^{-1} \text{Diag}(\boldsymbol{\beta}_{[t]})
+\end{aligned}$$
+
+对于$\mathbf{S}_{[t]}^{C}$
+
+$$\begin{aligned}
+\left.\delta \mathbf{S}_{[t-1]}^{C} \right|_{\text{from } \mathbf{S}_{[t]}^{C}}
+&=
+\delta \mathbf{S}_{[t]}^{C}
+-
+\delta \mathbf{S}_{[t]}^{C} \mathbf{K}_{[t]}^\top  \mathbf{W}_{[t]} 
+\\
+\\
+\left.\delta \mathbf{S}_{[t-1]}^{C} \right|_{\text{from } \mathbf{O}_{[t]}}
+&=
+\delta \mathbf{O}_{[t]}^\top  \mathbf{Q}_{[t]}
+-
+\delta \mathbf{O}_{[t]}^\top
+\left( \mathbf{Q}_{[t]} \mathbf{K}_{[t]}^\top \odot \mathbf{M} \right)  
+\mathbf{W}_{[t]}
+\\
+\\
+\Rightarrow
+\delta \mathbf{S}_{[t]}^{C}
+&=
+\delta \mathbf{S}_{[t+1]}^{C}
+-
+\delta \mathbf{S}_{[t+1]}^{C} \mathbf{K}_{[t+1]}^\top  \mathbf{W}_{[t+1]} 
++
+\delta \mathbf{O}_{[t+1]}^\top  \mathbf{Q}_{[t+1]}
+-
+\delta \mathbf{O}_{[t+1]}^\top
+\left( \mathbf{Q}_{[t+1]} \mathbf{K}_{[t+1]}^\top \odot \mathbf{M} \right)  
+\mathbf{W}_{[t+1]}
+\\
+\\
+&=
+\delta \mathbf{S}_{[t+1]}^{C}
++
+\delta \mathbf{O}_{[t+1]}^\top  \mathbf{Q}_{[t+1]}
+-
+\delta \mathbf{U}_{[t+1]}^\top  \mathbf{W}_{[t+1]} 
+\end{aligned}$$
+
+对于$\mathbf{Q}_{[t]}$
+
+$$\begin{aligned}
+\delta \mathbf{Q}_{[t]}
+&=
+\delta \mathbf{O}_{[t]} \mathbf{S}_{[t-1]}^C
++
+\left(\delta \mathbf{O}_{[t]}
+\mathbf{V}_{[t],new}^\top \odot \mathbf{M}\right) \mathbf{K}_{[t]}
+\end{aligned}$$
+
+对于$\mathbf{U}_{[t]}$
+
+$$\begin{aligned}
+\delta \mathbf{U}_{[t]}
+=
+\mathbf{K}_{[t]} \delta \mathbf{S}_{[t]}^{C \top}
++
+\left( \mathbf{K}_{[t]} \mathbf{Q}_{[t]}^\top \odot \mathbf{M}^\top \right) \delta \mathbf{O}_{[t]}
+\end{aligned}$$
+
+对于$\mathbf{W}_{[t]}$
+
+$$\begin{aligned}
+\delta \mathbf{W}_{[t]}
+=
+- 
+\mathbf{K}_{[t]} \delta \mathbf{S}_{[t]}^{C \top} \mathbf{S}_{[t-1]}^{C}
+-
+\left( \mathbf{K}_{[t]} \mathbf{Q}_{[t]}^\top \odot \mathbf{M}^\top \right) \delta \mathbf{O}_{[t]} \mathbf{S}_{[t-1]}^{C}
+=
+- 
+\delta \mathbf{U}_{[t]} \mathbf{S}_{[t-1]}^{C}
+\end{aligned}$$
+
+对于$\mathbf{V}_{[t]}$
+
+$$\begin{aligned}
+\delta \mathbf{V}_{[t]}
+=
+\mathbf{T}_{[t]}^\top \delta \mathbf{U}_{[t]}
+\end{aligned}$$
+
+
+对于$\mathbf{K}_{[t]}$
+
+$$\begin{aligned}
+\delta \mathbf{W}_{[t]}
+&=
+- 
+\mathbf{K}_{[t]} \delta \mathbf{S}_{[t]}^{C \top} \mathbf{S}_{[t-1]}^{C}
+-
+\left( \mathbf{K}_{[t]} \mathbf{Q}_{[t]}^\top \odot \mathbf{M}^\top \right) \delta \mathbf{O}_{[t]} \mathbf{S}_{[t-1]}^{C}
+= - \delta \mathbf{U}_{[t]} \mathbf{S}_{[t-1]}^{C}
+\\
+\\
+\left.\delta \mathbf{X}_{[t]}\right|_{\text{from } \mathbf{T}_{[t]}}
+&=
+- \mathbf{X}_{[t]}^{-\top} \delta \mathbf{T}_{[t]}  \text{Diag}(\boldsymbol{\beta}_{[t]}) \mathbf{X}_{[t]}^{-\top}
+=
+- \mathbf{X}_{[t]}^{-\top} \delta \mathbf{T}_{[t]}  \mathbf{T}_{[t]}^{\top}
+\\
+\\
+\left.\delta \mathbf{K}_{[t]}\right|_{\text{from } \mathbf{S}_{[t]} \text{ w/o } \mathbf{U}_{[t]} \text{ or } \mathbf{W}_{[t]} }
+&=
+\mathbf{V}_{[t],new} \delta \mathbf{S}_{[t]}^{C}
+\\
+\\
+\left.\delta \mathbf{K}_{[t]}\right|_{\text{from } \mathbf{O}_{[t]} \text{ w/o } \mathbf{U}_{[t]} \text{ or } \mathbf{W}_{[t]} }
+&=
+\left(\mathbf{V}_{[t],new} \delta \mathbf{O}_{[t]}^\top \odot \mathbf{M}^\top \right)\mathbf{Q}_{[t]}
+\\
+\\
+\left.\delta \mathbf{K}_{[t]}\right|_{\text{from } \mathbf{W}_{[t]}  \text{ w/o } \mathbf{T}_{[t]} }
+&=
+\mathbf{T}_{[t]}^\top \delta \mathbf{W}_{[t]}
+=
+- \mathbf{T}_{[t]}^\top \delta \mathbf{U}_{[t]} \mathbf{S}_{[t-1]}^{C}
+\\
+\\
+\left.\delta (\mathbf{K}_{[t]} \mathbf{K}_{[t]}^\top)\right|_{\text{from } \mathbf{T}_{[t]}}
+&=
+- \text{Diag}(\boldsymbol{\beta}_{[t]})
+\mathbf{X}_{[t]}^{-\top} 
+\delta \mathbf{T}_{[t]}
+\text{Diag}(\boldsymbol{\beta}_{[t]})
+\mathbf{X}_{[t]}^{-\top} \odot \mathbf{M}_{-1}
+= - \mathbf{T}_{[t]}^{\top} \delta \mathbf{T}_{[t]}
+\mathbf{T}_{[t]}^{\top} \odot \mathbf{M}_{-1}
+\\
+\\
+\Rightarrow
+\left.\delta \mathbf{K}_{[t]}\right|_{\text{from } \mathbf{T}_{[t]}}
+&=
+- \left(\mathbf{T}_{[t]}^{\top} \delta \mathbf{T}_{[t]}
+\mathbf{T}_{[t]}^{\top} \odot \mathbf{M}_{-1} \right) \mathbf{K}_{[t]}
+-
+\left(\mathbf{T}_{[t]}^{\top} \delta \mathbf{T}_{[t]}
+\mathbf{T}_{[t]}^{\top} \odot \mathbf{M}_{-1} \right)^\top \mathbf{K}_{[t]}
+\\&=
+- \left(\mathbf{T}_{[t]}^{\top} \delta \mathbf{T}_{[t]}
+\mathbf{T}_{[t]}^{\top} \odot \mathbf{M}_{-1} 
++
+\mathbf{T}_{[t]} \delta \mathbf{T}_{[t]}^\top
+\mathbf{T}_{[t]} \odot \mathbf{M}_{-1}^\top \right) \mathbf{K}_{[t]}
+\\
+\\
+\left.\delta \mathbf{T}_{[t]}\right|_{\text{from } \mathbf{U}_{[t]} \text{ and } \mathbf{W}_{[t]}}
+&=
+\delta \mathbf{U}_{[t]} \mathbf{V}_{[t]}^\top
++
+\delta \mathbf{W}_{[t]} \mathbf{K}_{[t]}^\top
+=
+\delta \mathbf{U}_{[t]} 
+\left(\mathbf{V}_{[t]}^\top - \delta \mathbf{U}_{[t]} \mathbf{S}_{[t-1]}^{C}\mathbf{K}_{[t]}^\top \right)
+\\
+\\
+\delta \mathbf{K}_{[t]}
+&=
+\mathbf{V}_{[t],new}  \delta \mathbf{S}_{[t]}^{C}
++
+\left(\mathbf{V}_{[t],new}  \delta \mathbf{O}_{[t]}^\top \odot \mathbf{M}^\top \right)\mathbf{Q}_{[t]}
+-
+\mathbf{T}_{[t]}^\top \delta \mathbf{U}_{[t]} \mathbf{S}_{[t-1]}^{C}
+\\ &- 
+\left(\mathbf{T}_{[t]}^{\top} \delta \mathbf{T}_{[t]}
+\mathbf{T}_{[t]}^{\top} \odot \mathbf{M}_{-1} 
++
+\mathbf{T}_{[t]} \delta \mathbf{T}_{[t]} ^\top
+\mathbf{T}_{[t]} \odot \mathbf{M}_{-1}^\top \right) \mathbf{K}_{[t]}
+\end{aligned}$$
+
+对于$\boldsymbol{\beta}_{[t]}$
+
+$$\begin{aligned}
+\delta \text{Diag}(\boldsymbol{\beta}_{[t]})
+&=
+\mathbf{X}_{[t]}^{-\top} \delta \mathbf{T}_{[t]}
+-
+\mathbf{X}_{[t]}^{-\top} \delta \mathbf{T}_{[t]} \mathbf{T}_{[t]}^\top \left( \mathbf{K}_{[t]} \mathbf{K}_{[t]}^\top \odot \mathbf{M}_{-1}^\top  \right)
+\\ &=
+\text{Diag}(\boldsymbol{\beta}_{[t]})^{-1}\mathbf{T}_{[t]}^{\top} \delta \mathbf{T}_{[t]}
+\left(\mathbf{I} - \mathbf{T}_{[t]}^\top \left( \mathbf{K}_{[t]} \mathbf{K}_{[t]}^\top \odot \mathbf{M}_{-1}^\top  \right) \right)
+\\
+\\
+\delta \boldsymbol{\beta}_{[t]} 
+&=
+\text{diag}(\delta \text{Diag}(\boldsymbol{\beta}_{[t]}))
+\end{aligned}$$
+
+***对于$\mathbf{K}_{[t]}, \boldsymbol{\beta}_{[t]}$的另外一种表达***。令$\mathbf{A} =  \mathbf{X}^{-1}$，则有：
+
+$$\begin{aligned}
+\delta \mathbf{W}_{[t]}
+&= - \delta \mathbf{U}_{[t]} \mathbf{S}_{[t-1]}^{C}
+\\
+\\
+\left.\delta \mathbf{T}_{[t]}\right|_{\text{from } \mathbf{U}_{[t]} \text{ and } \mathbf{W}_{[t]}}
+&=
+\delta \mathbf{U}_{[t]} \mathbf{V}_{[t]}^\top
++
+\delta \mathbf{W}_{[t]} \mathbf{K}_{[t]}^\top
+\\
+\\
+\delta \mathbf{A}_{[t]}
+&= \delta \mathbf{T}_{[t]}  \text{Diag}(\boldsymbol{\beta}_{[t]})^\top 
+=
+\delta \mathbf{U}_{[t]} (\mathbf{V}_{[t]} \text{Diag}(\boldsymbol{\beta}_{[t]}))^\top
++
+\delta \mathbf{W}_{[t]} (\mathbf{K}_{[t]}\text{Diag}(\boldsymbol{\beta}_{[t]}))^\top 
+\\
+\\
+\delta \mathbf{X}_{[t]}
+&=
+- \mathbf{A}_{[t]}^\top \delta \mathbf{A}_{[t]} \mathbf{A}_{[t]}^\top
+, \quad
+\mathbf{T}_{[t]}^\top \delta \mathbf{T}_{[t]} \mathbf{T}_{[t]}^\top
+=
+\text{Diag}(\boldsymbol{\beta}_{[t]}) \mathbf{A}_{[t]}^\top \delta \mathbf{A}_{[t]} \mathbf{A}_{[t]}^\top
+\\
+\\
+\left.\delta \mathbf{K}_{[t]}\right|_{\text{from } \mathbf{S}_{[t]} \text{ w/ } \mathbf{O}_{[t]}  \text{ w/o } \mathbf{U}_{[t]} \text{ or } \mathbf{W}_{[t]} }
+&=
+\mathbf{V}_{[t],new} \delta \mathbf{S}_{[t]}^{C}
++\left(\mathbf{V}_{[t],new} \delta \mathbf{O}_{[t]}^\top \odot \mathbf{M}^\top \right)\mathbf{Q}_{[t]}
+\\
+\\
+\left.\delta \mathbf{K}_{[t]}\right|_{\text{from } \mathbf{W}_{[t]}  \text{ w/o } \mathbf{T}_{[t]} }
+&=
+\mathbf{T}_{[t]}^\top \delta \mathbf{W}_{[t]}
+\\
+\\
+\left.\delta (\mathbf{K}_{[t]} \mathbf{K}_{[t]}^\top)\right|_{\text{from } \mathbf{T}_{[t]}}
+&=
+- \text{Diag}(\boldsymbol{\beta}_{[t]})
+\mathbf{X}_{[t]}^{-\top} 
+\delta \mathbf{T}_{[t]}
+\text{Diag}(\boldsymbol{\beta}_{[t]})
+\mathbf{X}_{[t]}^{-\top} \odot \mathbf{M}_{-1}
+= \text{Diag}(\boldsymbol{\beta}_{[t]}) (\delta \mathbf{X}_{[t]} \odot \mathbf{M}_{-1})
+\\
+\\
+\left.\delta \mathbf{K}_{[t]}\right|_{\text{from } \mathbf{T}_{[t]}}
+&=
+\text{Diag}(\boldsymbol{\beta}_{[t]})  \left(\delta \mathbf{X}_{[t]} \odot \mathbf{M}_{-1} \right) \mathbf{K}_{[t]}
++
+\left(\delta \mathbf{X}_{[t]} \odot \mathbf{M}_{-1} \right)^\top  \text{Diag}(\boldsymbol{\beta}_{[t]})  \mathbf{K}_{[t]}
+\\
+\\
+\delta \mathbf{K}_{[t]}
+&=
+\mathbf{V}_{[t],new}  \delta \mathbf{S}_{[t]}^{C}
++
+\left(\mathbf{V}_{[t],new}  \delta \mathbf{O}_{[t]}^\top \odot \mathbf{M}^\top \right)\mathbf{Q}_{[t]}
++
+\mathbf{T}_{[t]}^\top \delta \mathbf{W}_{[t]}
+\\ &+ 
+\text{Diag}(\boldsymbol{\beta}_{[t]})  \left(\delta \mathbf{X}_{[t]} \odot \mathbf{M}_{-1} \right) \mathbf{K}_{[t]}
++
+\left(\delta \mathbf{X}_{[t]} \odot \mathbf{M}_{-1} \right)^\top  \text{Diag}(\boldsymbol{\beta}_{[t]})  \mathbf{K}_{[t]}
+\end{aligned}$$
+
+$$\begin{aligned}
+\delta \text{Diag}(\boldsymbol{\beta}_{[t]})
+&=
+\mathbf{X}_{[t]}^{-\top} \delta \mathbf{T}_{[t]}
++
+\delta \mathbf{X}_{[t]}
+\left( \mathbf{K}_{[t]} \mathbf{K}_{[t]}^\top \odot \mathbf{M}_{-1}^\top  \right)
+\\ &=
+\mathbf{A}_{[t]}^\top \delta \mathbf{U}_{[t]} \mathbf{V}_{[t]}^\top
++
+\mathbf{A}_{[t]}^\top \delta \mathbf{W}_{[t]} \mathbf{K}_{[t]}^\top 
++
+\delta \mathbf{X}_{[t]} 
+\left( \mathbf{K}_{[t]} \mathbf{K}_{[t]}^\top \odot \mathbf{M}_{-1}  \right)^\top
+\\
+\\
+\delta \boldsymbol{\beta}_{[t]} 
+&=
+\text{diag}(\delta \text{Diag}(\boldsymbol{\beta}_{[t]}))
+\\ &=
+\text{diag}\left(\mathbf{A}_{[t]}^\top \delta \mathbf{U}_{[t]} \mathbf{V}_{[t]}^\top\right)
++
+\text{diag}\left(\mathbf{A}_{[t]}^\top \delta \mathbf{W}_{[t]} \mathbf{K}_{[t]}^\top\right)
++
+\text{diag}\left(\delta \mathbf{X}_{[t]} 
+\left( \mathbf{K}_{[t]} \mathbf{K}_{[t]}^\top \odot \mathbf{M}_{-1}  \right)^\top\right)
+\\&=
+\text{diag}\left(\mathbf{A}_{[t]}^\top \delta \mathbf{U}_{[t]} \mathbf{V}_{[t]}^\top\right)
++
+\text{diag}\left(\mathbf{A}_{[t]}^\top \delta \mathbf{W}_{[t]} \mathbf{K}_{[t]}^\top\right)
++
+\text{diag}\left((\delta \mathbf{X}_{[t]} \odot \mathbf{M}_{-1})
+\mathbf{K}_{[t]} \mathbf{K}_{[t]}^\top\right)
+\end{aligned}$$
+
+## Network Architecture
+
+1. rmsnorm是为了更稳定训练（和VMamba, Mamba-2里面提到的那样）
+2. q,k采用$\frac{\text{SiLU}(\mathbf{W} \boldsymbol{x}_t)}{\|\text{SiLU}(\mathbf{W} \boldsymbol{x}_t)\|_2}$ 的方式，其中silu替代原来的elu +1，l2 norm则是确保特征值小于1。【评论：这里q只是顺带，k需要小于1因为有$k^\top k$】
+3. 依然采用short conv (shift-ssm)，理由来自h3 (hungry hungry hippos)。【评论：我觉得苏剑林的理由更充足https://spaces.ac.cn/archives/11320 】
+4. 采用混合网络设计，gdn + swa + full attention。
+
+![](assets/Pasted%20image%2020260330162334.png)
+
+
+## Experiments
+
+### Acceleration
+
+![350](assets/Pasted%20image%2020260330161808.png)
+
+### MQAR
+
+来自Measuring and improving recall in efficient language models；MQAR用于评估模型的recall能力。该实验中，deltanet没有使用conv，其他训练设定与原文相同。
+
+### MAD
+
+合成token操作任务集合，用于评估linear attention。
+![](assets/Pasted%20image%2020260330162412.png)
+
+### Language Modeling
+
+实验设置与GLA相同。
+
+![](assets/Pasted%20image%2020260330162443.png)
+![](assets/Pasted%20image%2020260330162458.png)
+
+### RegBench
+![](assets/Pasted%20image%2020260330162527.png)
+
+【评论：mamba是否带conv差距太大了，是不是可能是hiddenstate更少的原因？】
+
+## Related Works
+![](assets/Pasted%20image%2020260330162603.png)
+
+
+
