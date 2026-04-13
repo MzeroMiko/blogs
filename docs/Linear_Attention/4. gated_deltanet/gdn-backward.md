@@ -128,7 +128,6 @@ $$\begin{aligned}
 \overleftarrow{\mathbf{W}_{[t+1]}}
 \end{aligned}$$
 
-
 ### Gradient with Respect to `Q_[t]`
 
 Next, the gradient with respect to `Q_[t]` can be written as:
@@ -185,7 +184,6 @@ $$\begin{aligned}
 \delta \widetilde{\mathbf{A}}_{[t]}
 \widetilde{\mathbf{A}}_{[t]}^\top
 \end{aligned}$$
-
 
 ### Gradient with Respect to `K_[t]` 
 
@@ -323,6 +321,47 @@ $$\begin{aligned}
 \right)
 \end{aligned}$$
 
+
+> **Comment**: Further simplifications here can accelerate FLA under `register` constraints.
+> 
+> $$\begin{aligned}
+> \delta \boldsymbol{\beta}_{[t]} 
+> &=
+> \text{diag}\left( 
+> \widetilde{\mathbf{A}}_{[t]}^\top 
+> \delta \overleftarrow{\mathbf{W}_{[t]}} 
+> \mathbf{K}_{[t]}^\top 
+> \text{Diag}(\boldsymbol{\gamma}_{[t]}) 
+> + \widetilde{\mathbf{A}}_{[t]}^\top 
+> \delta \mathbf{U}_{[t]} 
+> \mathbf{V}_{[t]}^\top \right) 
+> \\& 
+> + \text{diag}\left( 
+> \left( 
+> \delta \widetilde{\mathbf{X}}_{[t]} 
+> \odot \mathbf{M}_{-1} 
+> \right) 
+> \overrightarrow{\mathbf{K}_{[t]}} 
+> \overleftarrow{\mathbf{K}_{[t]}}^\top
+> \right)
+> \\&=
+> \text{diag}\left( 
+> \widetilde{\mathbf{A}}_{[t]}^\top 
+> \delta \widetilde{\mathbf{A}}_{[t]}
+> \right) 
+> \odot \boldsymbol{\beta}_{[t]}^{-1} 
+> + \text{diag}\left( 
+> \left( 
+> \delta \widetilde{\mathbf{X}}_{[t]} 
+> \odot \mathbf{M}_{-1} 
+> \right) 
+> \overrightarrow{\mathbf{K}_{[t]}} 
+> \overleftarrow{\mathbf{K}_{[t]}}^\top
+> \right)
+> \end{aligned}$$
+
+
+
 ### Gradient with Respect to `gamma_[t]`
 
 
@@ -342,11 +381,13 @@ $$\begin{aligned}
 \right)^\top
 \right)
 =
-\frac{1}{\boldsymbol{\gamma}_{[t]}^C} 
+\left(\boldsymbol{\gamma}_{[t]}^C\right)^{-1} 
 \text{Tr}\left(
 \delta \mathbf{S}_{[t]}^C \mathbf{S}_{[t]}^{C \top}
 \right)
 \end{aligned}$$
+
+> **Comment**: In practice, replacing two matrix multiplications with an extra memory load may not be beneficial.
 
 Next, the contribution from `S_[t]^C` without passing through `V_[t],new` is:
 
@@ -397,14 +438,51 @@ $$\begin{aligned}
 \mathbf{K}_{[t]}^\top
 \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
 \\&=
-\text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
-\delta \mathbf{Q}_{[t]}
+\delta \mathbf{O}_{[t]} 
+\mathbf{S}_{[t-1]}^C 
 \mathbf{Q}_{[t]}^\top
--
++
+\left( 
+\delta \mathbf{O}_{[t]} 
+\mathbf{V}_{[t],new}^\top 
+\odot \mathbf{M}  
+\right) 
+\text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+\mathbf{K}_{[t]}
+\mathbf{Q}_{[t]}^\top
+\\ &-
 \left.\delta \mathbf{K}_{[t]}\right|_{\text{from } \mathbf{O}_{[t]} \text{w/o } \mathbf{V}_{[t],new} }
 \mathbf{K}_{[t]}^\top
 \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
 \end{aligned}$$
+
+
+> **Comment**: We can further simplify this part.
+> 
+> $$\begin{aligned}
+> \left.\delta \text{Diag}(\boldsymbol{\gamma}_{[t]})\right|_{\text{from } \mathbf{O}_{[t]} \text{w/o} \mathbf{V}_{[t],new}}
+> &=
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> \delta \mathbf{Q}_{[t]}
+> \mathbf{Q}_{[t]}^\top
+> -
+> \left.\delta \mathbf{K}_{[t]}\right|_{\text{from } \mathbf{O}_{[t]} \text{w/o } \mathbf{V}_{[t],new} }
+> \mathbf{K}_{[t]}^\top
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> \\
+> \\ 
+> \Rightarrow
+> \left.\delta \text{Diag}(\boldsymbol{\gamma}_{[t]})\right|_{\text{from } \mathbf{S}_{[t]} \text{ w/ } \mathbf{O}_{[t]} \text{w/o} \mathbf{V}_{[t],new}}
+> &=
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> \delta \mathbf{Q}_{[t]}
+> \mathbf{Q}_{[t]}^\top
+> -
+> \left.\delta \mathbf{K}_{[t]}\right|_{\text{from } \mathbf{S}_{[t]} \text{ w/ } \mathbf{O}_{[t]} \text{w/o } \mathbf{V}_{[t],new} }
+> \mathbf{K}_{[t]}^\top
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> \end{aligned}$$
+
 
 In the same way, the contribution from `U_[t]` together with `W_[t]`, but without passing through `A_[t]`, is:
 
@@ -469,6 +547,108 @@ $$\begin{aligned}
 \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
 \end{aligned}$$
 
+
+> **Comment**: Further simplification is possible here, but it requires a fresh derivation from the ground up following a different roadmap.
+> 
+> $$\begin{aligned}
+> \mathbf{\widetilde{X}}_{[t]} &= \mathbf{I} + \text{Diag}(\boldsymbol{\beta}_{[t]}) \left( \overleftarrow{\mathbf{K}_{[t]}} \overrightarrow{\mathbf{K}_{[t]}}^\top \odot \mathbf{M}_{-1}  \right)
+> =
+> \text{Diag}(\boldsymbol{\gamma}_{[t]}) 
+> \mathbf{X}_{[t]}
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> \\
+> \\
+> \Rightarrow
+> \left.\delta \text{Diag}(\boldsymbol{\gamma}_{[t]})\right|_{\text{from } \widetilde{\mathbf{X}}_{[t]} }
+> &=
+> \delta \widetilde{\mathbf{X}}_{[t]}
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> \mathbf{X}_{[t]}^\top
+> -
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> \mathbf{X}_{[t]}^\top
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})
+> \delta \widetilde{\mathbf{X}}_{[t]}
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> \\ &=
+> \delta \widetilde{\mathbf{X}}_{[t]}
+> \widetilde{\mathbf{X}}_{[t]}^\top
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> -
+> \widetilde{\mathbf{X}}_{[t]}^\top
+> \delta \widetilde{\mathbf{X}}_{[t]}
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> \\ &=
+> \left(
+> - \widetilde{\mathbf{A}}_{[t]}^\top
+> \delta \widetilde{\mathbf{A}}_{[t]}
+> +
+> \delta \widetilde{\mathbf{A}}_{[t]}
+> \widetilde{\mathbf{A}}_{[t]}^\top
+> \right)
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> \\
+> \\
+> \Rightarrow
+> \left.\delta \text{Diag}(\boldsymbol{\gamma}_{[t]})\right|_{\text{from } \mathbf{U}_{[t]} \text{ w/ } \mathbf{W}_{[t]}}
+> &= 
+> \left.\delta \text{Diag}(\boldsymbol{\gamma}_{[t]})\right|_{\text{from } \mathbf{U}_{[t]} \text{ w/ } \mathbf{W}_{[t]} \text{ w/o } \widetilde{\mathbf{A}}_{[t]}}
+> +
+> \left.\delta \text{Diag}(\boldsymbol{\gamma}_{[t]})\right|_{\text{from } \widetilde{\mathbf{X}}_{[t]}}
+> \\ &=
+> - \widetilde{\mathbf{A}}_{[t]}^\top
+> \left(
+> \delta \widetilde{\mathbf{A}}_{[t]}
+> -
+> \delta \overleftarrow{\mathbf{W}_{[t]}} 
+> \mathbf{K}_{[t]}^\top 
+> \text{Diag}(\boldsymbol{\beta}_{[t]})
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})
+> \right)
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> \\&+
+> \delta \widetilde{\mathbf{A}}_{[t]}
+> \widetilde{\mathbf{A}}_{[t]}^\top
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> \\ &=
+> - \widetilde{\mathbf{A}}_{[t]}^\top
+> \left(
+> \delta \mathbf{U}_{[t]}
+> \mathbf{V}_{[t]}^\top
+> \text{Diag}(\boldsymbol{\beta}_{[t]}) 
+> \right)
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> +
+> \delta \widetilde{\mathbf{A}}_{[t]}
+> \widetilde{\mathbf{A}}_{[t]}^\top
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> \\ &=
+> \delta \widetilde{\mathbf{A}}_{[t]}
+> \widetilde{\mathbf{A}}_{[t]}^\top
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> -
+> \text{Diag}(\boldsymbol{\beta}_{[t]})^{-1}
+> \left(
+> \delta \mathbf{V}_{[t]}
+> \mathbf{V}_{[t]}^\top
+> \right)
+> \text{Diag}(\boldsymbol{\beta}_{[t]}) 
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> \\
+> \\
+> \Rightarrow
+> \left.\delta \boldsymbol{\gamma}_{[t]}\right|_{\text{from } \mathbf{U}_{[t]} \text{ w/ } \mathbf{W}_{[t]}}
+> &=
+> \text{diag}\left( 
+> \delta \widetilde{\mathbf{A}}_{[t]}
+> \widetilde{\mathbf{A}}_{[t]}^\top
+> -
+> \delta \mathbf{V}_{[t]}
+> \mathbf{V}_{[t]}^\top
+> \right)
+> \odot \boldsymbol{\gamma}_{[t]}^{-1}
+> \end{aligned}$$
+
 Putting everything together, we arrive at:
 
 $$\begin{aligned}
@@ -532,6 +712,36 @@ $$\begin{aligned}
 [0, 0, ..., \delta \boldsymbol{\gamma}_{[t]}^C]^\top
 \end{aligned}$$
 
+> **Comment**: Alternatively, consolidating all simplifications into a single approach leads to the formulation below.
+> 
+> $$\begin{aligned}
+> \delta \boldsymbol{\gamma}_{[t]} 
+> &= 
+> \text{diag}\left(
+> \delta \mathbf{Q}_{[t]}
+> \mathbf{Q}_{[t]}^\top
+> \right)
+> \odot \boldsymbol{\gamma}_{[t]}^{-1}
+> \\&-
+> \text{diag}\left(
+> \left.\delta \mathbf{K}_{[t]}\right|_{\text{from } \mathbf{S}_{[t]} \text{ w/ } \mathbf{O}_{[t]} \text{ w/o } \mathbf{V}_{[t],new}}
+> \mathbf{K}_{[t]}^\top 
+> \right)
+> \odot \boldsymbol{\gamma}_{[t]}^{-1}
+> \\&+ 
+> \text{diag}\left( 
+> \delta \widetilde{\mathbf{A}}_{[t]}
+> \widetilde{\mathbf{A}}_{[t]}^\top
+> -
+> \delta \mathbf{V}_{[t]}
+> \mathbf{V}_{[t]}^\top
+> \right)
+> \odot \boldsymbol{\gamma}_{[t]}^{-1}
+> \\ &+
+> [0, 0, ..., \delta \boldsymbol{\gamma}_{[t]}^C]^\top
+> \end{aligned}$$
+
+
 ### Gradient with Respect to `alpha_[t]`
 
 $$\begin{aligned}
@@ -539,4 +749,36 @@ $$\begin{aligned}
 &=
 \text{suffix\_cumsum}(\delta \log \mathbf{\gamma}_{[t]})
 \end{aligned}$$
+
+### Comments
+
+Someone may notice that, since
+
+$$\begin{aligned}
+\mathbf{X}_{[t]} 
+&= 
+\mathbf{I} 
++ \text{Diag}(\boldsymbol{\beta}_{[t]}) 
+\left( 
+\mathbf{K}_{[t]} \mathbf{K}_{[t]}^\top 
+\odot \mathbf{M}_{-1}  
+\right)
+\\
+\\
+\mathbf{\widetilde{X}}_{[t]} 
+&= 
+\text{Diag}(\boldsymbol{\gamma}_{[t]}) 
+\mathbf{X}_{[t]}
+\text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+\\
+\\
+\mathbf{A}_{[t]}
+&=
+\mathbf{X}_{[t]}^{-1}
+\end{aligned}$$
+
+materializing `A` or `Diag{\gamma}A` may lead to a more convenient formulation that reuses the original intermediate results.
+
+However, this can be numerically risky when `Diag(\gamma)^{-1}` appears in isolation while computing certain terms, because it may introduce extremely large values and amplify instability. Keep in mind the **secondary chunking** principle proposed in `GLA`.
+
 

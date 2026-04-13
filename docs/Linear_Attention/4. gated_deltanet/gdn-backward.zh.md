@@ -271,6 +271,7 @@ $$\begin{aligned}
 \left.\delta \mathbf{K}_{[t]}\right|_{\text{from } \widetilde{\mathbf{X}}_{[t]}}
 \end{aligned}$$
 
+
 ### 对于 `beta_[t]` 的梯度
 
 
@@ -318,6 +319,46 @@ $$\begin{aligned}
 \right)
 \end{aligned}$$
 
+
+> **评论**: 在寄存器资源受限的情况下，这里的进一步简化可以加速 FLA。
+> 
+> $$\begin{aligned}
+> \delta \boldsymbol{\beta}_{[t]} 
+> &=
+> \text{diag}\left( 
+> \widetilde{\mathbf{A}}_{[t]}^\top 
+> \delta \overleftarrow{\mathbf{W}_{[t]}} 
+> \mathbf{K}_{[t]}^\top 
+> \text{Diag}(\boldsymbol{\gamma}_{[t]}) 
+> + \widetilde{\mathbf{A}}_{[t]}^\top 
+> \delta \mathbf{U}_{[t]} 
+> \mathbf{V}_{[t]}^\top \right) 
+> \\& 
+> + \text{diag}\left( 
+> \left( 
+> \delta \widetilde{\mathbf{X}}_{[t]} 
+> \odot \mathbf{M}_{-1} 
+> \right) 
+> \overrightarrow{\mathbf{K}_{[t]}} 
+> \overleftarrow{\mathbf{K}_{[t]}}^\top
+> \right)
+> \\&=
+> \text{diag}\left( 
+> \widetilde{\mathbf{A}}_{[t]}^\top 
+> \delta \widetilde{\mathbf{A}}_{[t]}
+> \right) 
+> \odot \boldsymbol{\beta}_{[t]}^{-1} 
+> + \text{diag}\left( 
+> \left( 
+> \delta \widetilde{\mathbf{X}}_{[t]} 
+> \odot \mathbf{M}_{-1} 
+> \right) 
+> \overrightarrow{\mathbf{K}_{[t]}} 
+> \overleftarrow{\mathbf{K}_{[t]}}^\top
+> \right)
+> \end{aligned}$$
+
+
 ### 对于 `gamma_[t]` 的梯度
 
 
@@ -337,11 +378,13 @@ $$\begin{aligned}
 \right)^\top
 \right)
 =
-\frac{1}{\boldsymbol{\gamma}_{[t]}^C} 
+\left(\boldsymbol{\gamma}_{[t]}^C\right)^{-1} 
 \text{Tr}\left(
 \delta \mathbf{S}_{[t]}^C \mathbf{S}_{[t]}^{C \top}
 \right)
 \end{aligned}$$
+
+> **评论**: 在实际中，用一次额外的HBM加载来替代两次矩阵乘法，未必是有收益的。
 
 接下来，来自 `S_[t]^C` 且不经过 `V_[t],new` 的贡献为：
 
@@ -392,14 +435,51 @@ $$\begin{aligned}
 \mathbf{K}_{[t]}^\top
 \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
 \\&=
-\text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
-\delta \mathbf{Q}_{[t]}
+\delta \mathbf{O}_{[t]} 
+\mathbf{S}_{[t-1]}^C 
 \mathbf{Q}_{[t]}^\top
--
++
+\left( 
+\delta \mathbf{O}_{[t]} 
+\mathbf{V}_{[t],new}^\top 
+\odot \mathbf{M}  
+\right) 
+\text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+\mathbf{K}_{[t]}
+\mathbf{Q}_{[t]}^\top
+\\ &-
 \left.\delta \mathbf{K}_{[t]}\right|_{\text{from } \mathbf{O}_{[t]} \text{w/o } \mathbf{V}_{[t],new} }
 \mathbf{K}_{[t]}^\top
 \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
 \end{aligned}$$
+
+
+> **评论**: 我们可以进一步简化这部分。
+> 
+> $$\begin{aligned}
+> \left.\delta \text{Diag}(\boldsymbol{\gamma}_{[t]})\right|_{\text{from } \mathbf{O}_{[t]} \text{w/o} \mathbf{V}_{[t],new}}
+> &=
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> \delta \mathbf{Q}_{[t]}
+> \mathbf{Q}_{[t]}^\top
+> -
+> \left.\delta \mathbf{K}_{[t]}\right|_{\text{from } \mathbf{O}_{[t]} \text{w/o } \mathbf{V}_{[t],new} }
+> \mathbf{K}_{[t]}^\top
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> \\
+> \\ 
+> \Rightarrow
+> \left.\delta \text{Diag}(\boldsymbol{\gamma}_{[t]})\right|_{\text{from } \mathbf{S}_{[t]} \text{ w/ } \mathbf{O}_{[t]} \text{w/o} \mathbf{V}_{[t],new}}
+> &=
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> \delta \mathbf{Q}_{[t]}
+> \mathbf{Q}_{[t]}^\top
+> -
+> \left.\delta \mathbf{K}_{[t]}\right|_{\text{from } \mathbf{S}_{[t]} \text{ w/ } \mathbf{O}_{[t]} \text{w/o } \mathbf{V}_{[t],new} }
+> \mathbf{K}_{[t]}^\top
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> \end{aligned}$$
+
 
 同样地，来自 `U_[t]` 与 `W_[t]`，但不经过 `A_[t]` 的贡献为：
 
@@ -464,6 +544,108 @@ $$\begin{aligned}
 \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
 \end{aligned}$$
 
+
+> **评论**: 这里还可以进一步简化，但需要沿着另一条路线从头重新推导。
+> 
+> $$\begin{aligned}
+> \mathbf{\widetilde{X}}_{[t]} &= \mathbf{I} + \text{Diag}(\boldsymbol{\beta}_{[t]}) \left( \overleftarrow{\mathbf{K}_{[t]}} \overrightarrow{\mathbf{K}_{[t]}}^\top \odot \mathbf{M}_{-1}  \right)
+> =
+> \text{Diag}(\boldsymbol{\gamma}_{[t]}) 
+> \mathbf{X}_{[t]}
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> \\
+> \\
+> \Rightarrow
+> \left.\delta \text{Diag}(\boldsymbol{\gamma}_{[t]})\right|_{\text{from } \widetilde{\mathbf{X}}_{[t]} }
+> &=
+> \delta \widetilde{\mathbf{X}}_{[t]}
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> \mathbf{X}_{[t]}^\top
+> -
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> \mathbf{X}_{[t]}^\top
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})
+> \delta \widetilde{\mathbf{X}}_{[t]}
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> \\ &=
+> \delta \widetilde{\mathbf{X}}_{[t]}
+> \widetilde{\mathbf{X}}_{[t]}^\top
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> -
+> \widetilde{\mathbf{X}}_{[t]}^\top
+> \delta \widetilde{\mathbf{X}}_{[t]}
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> \\ &=
+> \left(
+> - \widetilde{\mathbf{A}}_{[t]}^\top
+> \delta \widetilde{\mathbf{A}}_{[t]}
+> +
+> \delta \widetilde{\mathbf{A}}_{[t]}
+> \widetilde{\mathbf{A}}_{[t]}^\top
+> \right)
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> \\
+> \\
+> \Rightarrow
+> \left.\delta \text{Diag}(\boldsymbol{\gamma}_{[t]})\right|_{\text{from } \mathbf{U}_{[t]} \text{ w/ } \mathbf{W}_{[t]}}
+> &= 
+> \left.\delta \text{Diag}(\boldsymbol{\gamma}_{[t]})\right|_{\text{from } \mathbf{U}_{[t]} \text{ w/ } \mathbf{W}_{[t]} \text{ w/o } \widetilde{\mathbf{A}}_{[t]}}
+> +
+> \left.\delta \text{Diag}(\boldsymbol{\gamma}_{[t]})\right|_{\text{from } \widetilde{\mathbf{X}}_{[t]}}
+> \\ &=
+> - \widetilde{\mathbf{A}}_{[t]}^\top
+> \left(
+> \delta \widetilde{\mathbf{A}}_{[t]}
+> -
+> \delta \overleftarrow{\mathbf{W}_{[t]}} 
+> \mathbf{K}_{[t]}^\top 
+> \text{Diag}(\boldsymbol{\beta}_{[t]})
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})
+> \right)
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> \\&+
+> \delta \widetilde{\mathbf{A}}_{[t]}
+> \widetilde{\mathbf{A}}_{[t]}^\top
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> \\ &=
+> - \widetilde{\mathbf{A}}_{[t]}^\top
+> \left(
+> \delta \mathbf{U}_{[t]}
+> \mathbf{V}_{[t]}^\top
+> \text{Diag}(\boldsymbol{\beta}_{[t]}) 
+> \right)
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> +
+> \delta \widetilde{\mathbf{A}}_{[t]}
+> \widetilde{\mathbf{A}}_{[t]}^\top
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> \\ &=
+> \delta \widetilde{\mathbf{A}}_{[t]}
+> \widetilde{\mathbf{A}}_{[t]}^\top
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> -
+> \text{Diag}(\boldsymbol{\beta}_{[t]})^{-1}
+> \left(
+> \delta \mathbf{V}_{[t]}
+> \mathbf{V}_{[t]}^\top
+> \right)
+> \text{Diag}(\boldsymbol{\beta}_{[t]}) 
+> \text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+> \\
+> \\
+> \Rightarrow
+> \left.\delta \boldsymbol{\gamma}_{[t]}\right|_{\text{from } \mathbf{U}_{[t]} \text{ w/ } \mathbf{W}_{[t]}}
+> &=
+> \text{diag}\left( 
+> \delta \widetilde{\mathbf{A}}_{[t]}
+> \widetilde{\mathbf{A}}_{[t]}^\top
+> -
+> \delta \mathbf{V}_{[t]}
+> \mathbf{V}_{[t]}^\top
+> \right)
+> \odot \boldsymbol{\gamma}_{[t]}^{-1}
+> \end{aligned}$$
+
 把所有这些部分合并起来，就得到：
 
 $$\begin{aligned}
@@ -527,6 +709,36 @@ $$\begin{aligned}
 [0, 0, ..., \delta \boldsymbol{\gamma}_{[t]}^C]^\top
 \end{aligned}$$
 
+> **评论**: 或者，将所有简化整合为一种统一的方法，可得到如下公式。
+> 
+> $$\begin{aligned}
+> \delta \boldsymbol{\gamma}_{[t]} 
+> &= 
+> \text{diag}\left(
+> \delta \mathbf{Q}_{[t]}
+> \mathbf{Q}_{[t]}^\top
+> \right)
+> \odot \boldsymbol{\gamma}_{[t]}^{-1}
+> \\&-
+> \text{diag}\left(
+> \left.\delta \mathbf{K}_{[t]}\right|_{\text{from } \mathbf{S}_{[t]} \text{ w/ } \mathbf{O}_{[t]} \text{ w/o } \mathbf{V}_{[t],new}}
+> \mathbf{K}_{[t]}^\top 
+> \right)
+> \odot \boldsymbol{\gamma}_{[t]}^{-1}
+> \\&+ 
+> \text{diag}\left( 
+> \delta \widetilde{\mathbf{A}}_{[t]}
+> \widetilde{\mathbf{A}}_{[t]}^\top
+> -
+> \delta \mathbf{V}_{[t]}
+> \mathbf{V}_{[t]}^\top
+> \right)
+> \odot \boldsymbol{\gamma}_{[t]}^{-1}
+> \\ &+
+> [0, 0, ..., \delta \boldsymbol{\gamma}_{[t]}^C]^\top
+> \end{aligned}$$
+
+
 ### 对于 `alpha_[t]` 的梯度
 
 最后，有：
@@ -536,4 +748,35 @@ $$\begin{aligned}
 &=
 \text{suffix\_cumsum}(\delta \log \mathbf{\gamma}_{[t]})
 \end{aligned}$$
+
+### 评论
+
+有人可能会注意到，因为
+
+$$\begin{aligned}
+\mathbf{X}_{[t]} 
+&= 
+\mathbf{I} 
++ \text{Diag}(\boldsymbol{\beta}_{[t]}) 
+\left( 
+\mathbf{K}_{[t]} \mathbf{K}_{[t]}^\top 
+\odot \mathbf{M}_{-1}  
+\right)
+\\
+\\
+\mathbf{\widetilde{X}}_{[t]} 
+&= 
+\text{Diag}(\boldsymbol{\gamma}_{[t]}) 
+\mathbf{X}_{[t]}
+\text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1}
+\\
+\\
+\mathbf{A}_{[t]}
+&=
+\mathbf{X}_{[t]}^{-1}
+\end{aligned}$$
+
+所以存储`A`或者`Diag{\gamma}A`可能可以获得更方便的表达形式，并复用一些中间结果。然而，如果`Diag(\gamma)^{-1}`单独出现则可能带来数值精度的风险，因为引入非常大的数值并放大不稳定性。在推导过程中请注意考虑`GLA`中 **secondary chunking** 的原则。
+
+
 
