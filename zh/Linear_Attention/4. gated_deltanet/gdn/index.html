@@ -1,0 +1,2024 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://mzeromiko.github.io/blogs/zh/Linear_Attention/4.%20gated_deltanet/gdn/">
+      
+      
+        <link rel="prev" href="../gdn-fla/">
+      
+      
+        <link rel="next" href="../../5.%20kimi_linear/kda-backward/">
+      
+      
+        
+          <link rel="alternate" href="../../../../Linear_Attention/4.%20gated_deltanet/gdn/" hreflang="en">
+        
+          <link rel="alternate" href="./" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>阅读笔记： Gated Delta Networks - Reading Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans+SC:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Noto Sans SC";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#gated-delta-networks" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../../../" title="Reading Notes" class="md-header__button md-logo" aria-label="Reading Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 2-5 4.5v11l5-4.5zM6.5 5C4.55 5 2.45 5.4 1 6.5v14.66c0 .25.25.5.5.5.1 0 .15-.07.25-.07 1.35-.65 3.3-1.09 4.75-1.09 1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.31 4.75 1.06.1.05.15.03.25.03.25 0 .5-.25.5-.5V6.5c-.6-.45-1.25-.75-2-1V19c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V6.5C10.55 5.4 8.45 5 6.5 5"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Reading Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              阅读笔记： Gated Delta Networks
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Dark Mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark Mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Light Mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light Mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="选择当前语言">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../../Linear_Attention/4.%20gated_deltanet/gdn/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+    <a href="https://mzeromiko.github.io" title="Personal Homepage" class="md-header__button md-icon" target="_blank" rel="noopener">
+      <svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"><g fill-rule="evenodd"><path d="M357 124l-3 6-42 43-42 42v105c2 8 8 13 15 15h58c7-3 13-8 14-16V124" fill="#bc22f3"/><path d="M41 219l1 99c1 8 7 15 15 17h57c7-1 12-7 14-14l1-2V215l-42-42c-45-45-43-43-44-47a23 23 0 0 1-1-3c-1-1-1 1-1 96m271-46l-42 42 42-42" fill="#e32a77"/><path d="M93 65c-2 0-5 1-7 3l-41 39c-3 4-4 11-3 15v2l3 6 104 104c-5-6-5-14 0-21l26-26 25-26-45-44-47-47c-4-4-10-6-15-5" fill="#34e3bb"/><path d="M301 65l-8 3-144 145c-5 7-4 15 0 21 1 3 37 38 39 40 8 5 17 4 24-1l143-144c4-6 4-14-1-21l-41-40c-3-3-8-4-12-3" fill="#fbdb04"/><path d="M145 223l1 1a13 13 0 0 0 0-1h-1" fill="#6c9c9c"/></g></svg>
+    </a>
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../" title="Reading Notes" class="md-nav__button md-logo" aria-label="Reading Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 2-5 4.5v11l5-4.5zM6.5 5C4.55 5 2.45 5.4 1 6.5v14.66c0 .25.25.5.5.5.1 0 .15-.07.25-.07 1.35-.65 3.3-1.09 4.75-1.09 1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.31 4.75 1.06.1.05.15.03.25.03.25 0 .5-.25.5-.5V6.5c-.6-.45-1.25-.75-2-1V19c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V6.5C10.55 5.4 8.45 5 6.5 5"/></svg>
+
+    </a>
+    Reading Notes
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    阅读笔记
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Linear Attention
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Linear Attention
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_1" id="__nav_2_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1. retnet
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    1. retnet
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.%20retnet/retnet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    阅读笔记：RetNet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2. gated linear attention
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    2. gated linear attention
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../2.%20gated_linear_attention/gla-fla/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    阅读笔记：GLA 在 FLA 中的代码实现笔记
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../2.%20gated_linear_attention/gla/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    阅读笔记：Gated Linear Attention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3. deltanet
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    3. deltanet
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../3.%20deltanet/deltanet-backward/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    阅读笔记：DeltaNet 的反向传播
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../3.%20deltanet/deltanet-fla/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    阅读笔记：DeltaNet 在 FLA 中的代码实现笔记
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../3.%20deltanet/deltanet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    阅读笔记：DeltaNet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    4. gated deltanet
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    4. gated deltanet
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gdn-backward/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    阅读笔记：Gated DeltaNet 的反向传播
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gdn-fla/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    阅读笔记：GDN 在 FLA 中的实现笔记
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    阅读笔记： Gated Delta Networks
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    阅读笔记： Gated Delta Networks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        一、动机
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        二、符号约定
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        三、在线学习视角
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="三、在线学习视角">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 数学预备知识
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 推导
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.2 推导">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#321-longhorn" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.1 Longhorn
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#322-mamba2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.2 Mamba2
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gated-delta-rule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        四、Gated Delta Rule
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="四、Gated Delta Rule">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 前向传播
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        五、网络结构
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        六、实验
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="六、实验">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 语言建模
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 上下文内检索
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 长序列上的长度外推
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.4 长上下文理解
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    5. kimi linear
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    5. kimi linear
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../5.%20kimi_linear/kda-backward/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    阅读笔记: Kimi Delta Attention 的反向传播
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../5.%20kimi_linear/kda-fla/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading Notes: Implementation Notes for KDA in FLA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../5.%20kimi_linear/kda/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    阅读笔记: Kimi Delta Attention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_6" id="__nav_2_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    6. DPLR
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    6. DPLR
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../6.%20DPLR/dplr/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Diagonal Plus Low Rank
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        一、动机
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        二、符号约定
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        三、在线学习视角
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="三、在线学习视角">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 数学预备知识
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 推导
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.2 推导">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#321-longhorn" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.1 Longhorn
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#322-mamba2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2.2 Mamba2
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gated-delta-rule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        四、Gated Delta Rule
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="四、Gated Delta Rule">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 前向传播
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        五、网络结构
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        六、实验
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="六、实验">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 语言建模
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 上下文内检索
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 长序列上的长度外推
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.4 长上下文理解
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="gated-delta-networks">阅读笔记： Gated Delta Networks<a class="headerlink" href="#gated-delta-networks" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p><strong>原文链接</strong>：<a href="https://arxiv.org/pdf/2412.06464">https://arxiv.org/pdf/2412.06464</a> <br />
+<strong>代码链接</strong>：<a href="https://github.com/fla-org/flash-linear-attention/">https://github.com/fla-org/flash-linear-attention</a> <br />
+<strong>声明</strong>：本文为个人阅读笔记。所有来自我自己的推导都可能存在错误。   </p>
+</blockquote>
+<h2 id="_1">一、动机<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p><strong>评论</strong>：感觉这篇论文的 Introduction 写得很好。</p>
+</blockquote>
+<ol>
+<li>标准注意力的二次方计算复杂度催生了线性注意力的研究方向。</li>
+<li>尽管最新的线性注意力工作在性能上有所提升，但在<strong>上下文检索</strong>（in-context retrieval）任务上仍然表现不佳。</li>
+<li>这并不意外，因为隐状态（state space）的容量是有限的。</li>
+<li>Mamba2 采用全局衰减（decay）来管理记忆，但它无法为每个 KV 对单独遗忘。</li>
+<li>Delta rule 可以逐个处理 KV 的遗忘，但无法迅速抹除过去的记忆。</li>
+<li>两者具有天然的互补性，因此作者设计了 <strong>Gated Delta Rule</strong>，结合全局衰减与逐 KV 遗忘。</li>
+<li>剩下的挑战在于如何高效实现。作者在 chunk-wise 并行算法和 Triton kernel 优化方面做了大量工作。</li>
+<li>最终完成的 <strong>Gated DeltaNet</strong> 架构在多项基准上取得了优异表现。</li>
+</ol>
+<h2 id="_2">二、符号约定<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<ol>
+<li>使用 <span class="arithmatex">\(\mathbf{S, Q}\)</span> 等粗体大写字母表示矩阵</li>
+<li>使用 <span class="arithmatex">\(\mathbf{q}_t, \mathbf{k}_t\)</span> 等表示<strong>列向量</strong>（即 <span class="arithmatex">\([d, 1]\)</span> 的形式），矩阵则是 <span class="arithmatex">\([L, d]\)</span> 的形式，因此会有额外的转置操作</li>
+<li>使用 <span class="arithmatex">\(W_t\)</span> 等表示可学习参数</li>
+<li>使用 <span class="arithmatex">\(\mathbf{q}_t\)</span> 表示 <span class="arithmatex">\(\mathbf{Q}\)</span> 的第 <span class="arithmatex">\(t\)</span> 行</li>
+<li><span class="arithmatex">\(\square_{[t]} = \square_{[t]}^{1:C} \in \mathbb{R}^{C \times d}\)</span> 表示第 <span class="arithmatex">\(t\)</span> 个 chunk，其中 <span class="arithmatex">\(\square \in { \mathbf{Q, K, V, \dots} }\)</span></li>
+</ol>
+<h2 id="_3">三、在线学习视角<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p><img alt="" src="../../../../Linear_Attention/4.%20gated_deltanet/assets/Pasted%20image%2020260403144404.png" /></p>
+<h3 id="31">3.1 数学预备知识<a class="headerlink" href="#31" title="Permanent link">&para;</a></h3>
+<p>我们先回顾几个基本恒等式。</p>
+<div class="arithmatex">\[\begin{aligned}
+\|\mathbf{A}\|_F^2 &amp;= \sum_{i,j} a_{ij}^2 = \text{Tr}(\mathbf{A}^\top \mathbf{A})
+,\quad
+\langle\boldsymbol{k}_t, \boldsymbol{v}_t\rangle = \text{Tr}(\boldsymbol{v}_t^\top \boldsymbol{k}_t)
+,\quad
+\|\boldsymbol{x}\|^2 = \sum_i x_i^2 = \boldsymbol{x}^\top \boldsymbol{x}
+\\
+\\
+d \left(\text{Tr}(\mathbf{A}^\top \mathbf{A})\right) &amp;= \text{Tr}(d(\mathbf{A}^\top \mathbf{A})) = \text{Tr}((d\mathbf{A})^\top \mathbf{A} + \mathbf{A}^\top (d\mathbf{A}))
+=
+\text{Tr}(2\mathbf{A}^\top (d\mathbf{A}))
+\\
+\\
+d(\boldsymbol{x}^\top \boldsymbol{y}) &amp;= (d\boldsymbol{x})^\top \boldsymbol{y} + \boldsymbol{x}^\top (d\boldsymbol{y})
+\Rightarrow
+d(\boldsymbol{x}^\top \boldsymbol{x}) = 2 \boldsymbol{x}^\top (d\boldsymbol{x})
+\end{aligned}\]</div>
+<p>由此可以得到：</p>
+<div class="arithmatex">\[\begin{aligned}
+d \|\mathbf{A}\|_F^2 &amp;= \text{Tr}( (\frac{\partial \|\mathbf{A}\|_F^2}{\partial \mathbf{A}})^\top d\mathbf{A})
+\Rightarrow
+\frac{\partial \|\mathbf{A}\|_F^2}{\partial \mathbf{A}}
+=
+2 \mathbf{A}
+\\
+\\
+d \|\boldsymbol{x}\|^2 &amp;= \text{Tr}( (\frac{\partial \|\boldsymbol{x}\|^2}{\partial \boldsymbol{x}})^\top d\boldsymbol{x})
+\Rightarrow
+\frac{\partial \|\boldsymbol{x}\|^2}{\partial \boldsymbol{x}}
+=
+2 \boldsymbol{x}
+\\
+\\
+d \langle\boldsymbol{k}_t, \boldsymbol{v}_t\rangle
+&amp;=
+\text{Tr}((\frac{\partial \langle\boldsymbol{k}_t, \boldsymbol{v}_t\rangle}{\partial \boldsymbol{k}_t})^\top d \boldsymbol{k}_t)
+\Rightarrow
+\frac{\partial \langle\boldsymbol{k}_t, \boldsymbol{v}_t\rangle}{\partial \boldsymbol{k}_t} = \boldsymbol{v}_t
+\end{aligned}\]</div>
+<p>此外，还会用到 <strong>Sherman–Morrison 公式</strong>：</p>
+<div class="arithmatex">\[\begin{aligned}
+(I + \boldsymbol{u}\boldsymbol{v}^\top)^{-1} = I - \frac{\boldsymbol{u}\boldsymbol{v}^\top}{1 + \boldsymbol{v}^\top\boldsymbol{u}}
+\end{aligned}\]</div>
+<h3 id="32">3.2 推导<a class="headerlink" href="#32" title="Permanent link">&para;</a></h3>
+<h4 id="321-longhorn">3.2.1 Longhorn<a class="headerlink" href="#321-longhorn" title="Permanent link">&para;</a></h4>
+<p>先看 Longhorn 的目标函数：</p>
+<div class="arithmatex">\[\begin{aligned}
+L &amp;= \|\mathbf{S}_t - \mathbf{S}_{t-1}\|_F^2 + \beta_t \|\mathbf{S}_t \boldsymbol{k}_t - \boldsymbol{v}_t\|^2
+\\
+\\
+\Rightarrow 
+\frac{\partial}{\partial \mathbf{S}_t} L 
+&amp;=
+2 (\mathbf{S}_t - \mathbf{S}_{t-1}) 
++ 2\beta_t (\mathbf{S}_t \boldsymbol{k}_t - \boldsymbol{v}_t) \boldsymbol{k}_t^\top
+= 0
+\\
+\\
+\Rightarrow
+\mathbf{S}_t (\mathbf{I} + \beta_t \boldsymbol{k}_t \boldsymbol{k}_t^\top)  &amp;= \mathbf{S}_{t-1} + \beta_t\boldsymbol{v}_t \boldsymbol{k}_t^\top
+\\
+\\
+\Rightarrow
+\mathbf{S}_t   
+&amp;= \mathbf{S}_{t-1} (\mathbf{I} - \frac{ \beta_t \boldsymbol{k}_t \boldsymbol{k}_t^\top}{1 + \beta_t \boldsymbol{k}_t^\top \boldsymbol{k}_t} ) + \beta_t\boldsymbol{v}_t \boldsymbol{k}_t^\top (\mathbf{I} - \frac{ \beta_t \boldsymbol{k}_t \boldsymbol{k}_t^\top}{1 + \beta_t \boldsymbol{k}_t^\top \boldsymbol{k}_t} )
+\\&amp;= 
+\mathbf{S}_{t-1} (\mathbf{I} - \epsilon_t  \boldsymbol{k}_t \boldsymbol{k}_t^\top) 
++ \epsilon_t  \boldsymbol{v}_t \boldsymbol{k}_t^\top
++ \epsilon_t \beta_t \boldsymbol{v}_t \boldsymbol{k}_t^\top (\boldsymbol{k}_t^\top \boldsymbol{k}_t - \boldsymbol{k}_t \boldsymbol{k}_t^\top)
+\\&amp;= 
+\mathbf{S}_{t-1} (\mathbf{I} - \epsilon_t  \boldsymbol{k}_t \boldsymbol{k}_t^\top) 
++ \epsilon_t  \boldsymbol{v}_t \boldsymbol{k}_t^\top
+\\
+\epsilon_t &amp;= \frac{\beta_t}{1 + \beta_t \boldsymbol{k}_t^\top \boldsymbol{k}_t}
+\end{aligned}\]</div>
+<blockquote>
+<p><strong>评论</strong>：这里的 <code>beta_t</code> 看起来和原论文中的定义并不完全一致。</p>
+</blockquote>
+<h4 id="322-mamba2">3.2.2 Mamba2<a class="headerlink" href="#322-mamba2" title="Permanent link">&para;</a></h4>
+<p>接着，对于 Mamba2，有：</p>
+<div class="arithmatex">\[\begin{aligned}
+L &amp;= \|\mathbf{S}_t - \alpha_t \mathbf{S}_{t-1}\|_F^2 - 2 \langle \mathbf{S}_t \boldsymbol{k}_t, \boldsymbol{v}_t\rangle
+\\
+\\
+\Rightarrow 
+\frac{\partial}{\partial \mathbf{S}_t} L 
+&amp;=
+2 (\mathbf{S}_t - \alpha_t \mathbf{S}_{t-1})
+-
+2 \boldsymbol{v}_t \boldsymbol{k}_t^\top 
+\Rightarrow 
+\mathbf{S}_t = \alpha_t \mathbf{S}_{t-1} + \boldsymbol{v}_t \boldsymbol{k}_t^\top 
+\end{aligned}\]</div>
+<p>根据论文中的表格，<code>LA</code>、<code>DeltaNet</code> 和 <code>Gated DeltaNet</code> 都可以按和 Mamba2 类似的方式推导出来。</p>
+<h2 id="gated-delta-rule">四、Gated Delta Rule<a class="headerlink" href="#gated-delta-rule" title="Permanent link">&para;</a></h2>
+<h3 id="41">4.1 前向传播<a class="headerlink" href="#41" title="Permanent link">&para;</a></h3>
+<p>先回顾 Gated DeltaNet 的更新公式：</p>
+<div class="arithmatex">\[\begin{aligned}
+\mathbf{S}_t 
+= 
+\mathbf{S}_{t-1}\alpha_t (\mathbf{I} - \beta_t \boldsymbol{k}_t \boldsymbol{k}_t^\top) + \beta_t \boldsymbol{v}_t \boldsymbol{k}_t^\top
+\end{aligned}\]</div>
+<p>接着，仿照 DeltaNet 和 GLA 中的推导，定义：</p>
+<div class="arithmatex">\[\begin{aligned}
+\mathbf{P}_{[t]}^{r} &amp;= \prod_{i=t C + 1}^{t C + r}(\mathbf{I} - \beta_{i} \boldsymbol{k}_{i} \boldsymbol{k}_{i}^{\top}) 
+\in \mathbb{R}^{d \times d}
+,\quad 
+\gamma_{[t]}^{r} = \prod_{i=t C + 1}^{t C + r} \alpha_i
+\\
+\\
+\mathbf{H}_{[t]}^{r} &amp;= \sum_{i=tC + 1}^{tC + r} \beta_{i} (\boldsymbol{v}_{i} \boldsymbol{k}_{i}^{\top}) 
+\frac{\gamma_{[t]}^{r}}{\gamma_{[t]}^{i}}
+\left(
+\prod_{j=i + 1}^{t C + r}(\mathbf{I} - \beta_{j} \boldsymbol{k}_{j} \boldsymbol{k}_{j}^{\top}) 
+\right)
+\in \mathbb{R}^{d \times d}
+\end{aligned}\]</div>
+<p>于是，分块后的状态可以写成：</p>
+<div class="arithmatex">\[\begin{aligned}
+\mathbf{S}_{[t]}^{r} 
+= 
+\mathbf{S}_{[t-1]}^{C} 
+\gamma_{[t]}^{r}
+\mathbf{P}_{[t]}^{r}  + \mathbf{H}_{[t]}^{r}
+, \quad
+\text{where }
+\mathbf{S}_{[-1]}^{C} = \mathbf{0}
+\end{aligned}\]</div>
+<p>另一方面，假设：</p>
+<div class="arithmatex">\[\begin{aligned}
+\mathbf{S}_t = \eta_t \sum_{i=1}^{t} \boldsymbol{u^0}_i \boldsymbol{k}_i^\top
+\end{aligned}\]</div>
+<p>那么由数学归纳法可得：</p>
+<div class="arithmatex">\[\begin{aligned}
+\mathbf{S}_t &amp;=  \alpha_t \mathbf{S}_{t-1}  + \beta_t (\boldsymbol{v}_t - \alpha_t  \mathbf{S}_{t-1} \boldsymbol{k}_t )\boldsymbol{k}_t^\top 
+\\&amp;= 
+\alpha_t \eta_{t-1} \sum_{i=1}^{t-1} \boldsymbol{u^0}_i \boldsymbol{k}_i^\top 
++ 
+\beta_t \left( \boldsymbol{v}_t - \alpha_t \eta_{t-1}  \sum_{i=1}^{t-1} \boldsymbol{u^0}_i \boldsymbol{k}_i^\top \boldsymbol{k}_t \right) \boldsymbol{k}_t^\top 
+= 
+\eta_t \sum_{i=1}^{t} \boldsymbol{u^0}_i \boldsymbol{k}_i^\top
+\end{aligned}\]</div>
+<p>其中：</p>
+<div class="arithmatex">\[\begin{aligned}
+\eta_t = \alpha_t \eta_{t-1} = \gamma_t
+,\quad
+\boldsymbol{u^0}_t = \frac{\beta_t}{\eta_t} \boldsymbol{v}_t - \beta_t  \sum_{i=1}^{t-1} \boldsymbol{u^0}_i \boldsymbol{k}_i^\top \boldsymbol{k}_t
+\end{aligned}\]</div>
+<p>等价地，也可以写成：</p>
+<div class="arithmatex">\[\begin{aligned}
+\mathbf{S}_t =  \sum_{i=1}^{t} \frac{\gamma_t}{\gamma_i} \boldsymbol{u}_i \boldsymbol{k}_i^\top
+,\quad
+\boldsymbol{u}_t = \beta_t \left(\boldsymbol{v}_t - \sum_{i=1}^{t-1} \frac{\gamma_t}{\gamma_i} \boldsymbol{u}_i \boldsymbol{k}_i^\top \boldsymbol{k}_t \right)
+\end{aligned}\]</div>
+<p>另一方面，形如 <code>(I - beta_t k_t k_t^T)</code> 的 Householder 变换乘积总可以写成低秩形式，也就是 <code>WY representation</code>。根据 DeltaNet 笔记，可以得到：</p>
+<div class="arithmatex">\[\begin{aligned}
+\mathbf{P}_{[t]}^{r} = \mathbf{I} - \sum_{i=1}^{r} \boldsymbol{w}_{[t]}^{i} \boldsymbol{k}_{[t]}^{i \top}
+,\quad
+\boldsymbol{w}_{[t]}^{r} = \beta_{[t]}^{r} \boldsymbol{k}_{[t]}^{r} - \beta_{[t]}^{r}  \sum_{i=1}^{r-1} \boldsymbol{w}_{[t]}^{i} \boldsymbol{k}_{[t]}^{i \top} \boldsymbol{k}_{[t]}^{r}
+\end{aligned}\]</div>
+<p>把它代回到 chunkwise 递推式中，就有：</p>
+<div class="arithmatex">\[\begin{aligned}
+\mathbf{S}_{[t]}^{r} 
+&amp;= 
+\mathbf{S}_{[t-1]}^{C} \gamma_{[t]}^{r} \left(\mathbf{I} - \sum_{i=1}^{r} \boldsymbol{w}_{[t]}^{i} \boldsymbol{k}_{[t]}^{i \top}\right)  
++ 
+ \sum_{i=1}^{r} \frac{\gamma_{[t]}^{r}}{\gamma_{[t]}^{i}} \boldsymbol{u}_{[t]}^{i} \boldsymbol{k}_{[t]}^{i\top}
+\\&amp;=
+\gamma_{[t]}^{r} \mathbf{S}_{[t-1]}^{C}
++ 
+\gamma_{[t]}^{r} \sum_{i=1}^{r} \left(\boldsymbol{u}_{[t]}^{i} - \mathbf{S}_{[t-1]}^{C} \gamma_{[t]}^{i} \boldsymbol{w}_{[t]}^{i}  \right)\frac{\boldsymbol{k}_{[t]}^{i\top}}{\gamma_{[t]}^{i}} 
+\\
+\\
+\boldsymbol{o}_{[t]}^{r}
+&amp;=
+\mathbf{S}_{[t]}^{r} \boldsymbol{q}_{[t]}^{r}
+=
+\mathbf{S}_{[t-1]}^{C}  \boldsymbol{q}_{[t]}^{r} \gamma_{[t]}^{r} 
++ 
+\sum_{i=1}^{r} \left(\boldsymbol{u}_{[t]}^{i} - \mathbf{S}_{[t-1]}^{C} \gamma_{[t]}^{i} \boldsymbol{w}_{[t]}^{i}  \right)\frac{\boldsymbol{k}_{[t]}^{i\top}}{\gamma_{[t]}^{i}}  \boldsymbol{q}_{[t]}^{r} \gamma_{[t]}^{r} 
+\end{aligned}\]</div>
+<p>现在再定义：</p>
+<div class="arithmatex">\[\begin{aligned}
+\overleftarrow{\square_{[t]}} 
+&amp;= 
+\text{Diag}(\boldsymbol{\gamma}_{[t]}) 
+\square_{[t]}
+,\quad
+\overrightarrow{\square_{[t]}} 
+= 
+\text{Diag}(\boldsymbol{\gamma}_{[t]})^{-1} 
+\square_{[t]}
+\quad\text{for}\quad \square \in \{ \mathbf{Q}, \mathbf{K}, \mathbf{W}\}
+\end{aligned}\]</div>
+<p>于是，整体计算可以进一步写成矩阵形式：</p>
+<div class="arithmatex">\[\begin{aligned}
+\mathbf{S}_{[t]}^{C} 
+&amp;=
+\gamma_{[t]}^{C} \mathbf{S}_{[t-1]}^{C}
++
+\gamma_{[t]}^{C} \left(\mathbf{U}_{[t]}^\top - \mathbf{S}_{[t-1]}^{C} \overleftarrow{\mathbf{W}_{[t]}}^\top  \right)\overrightarrow{\mathbf{K}_{[t]}}
+\\
+\\
+\mathbf{O}_{[t]}
+&amp;=
+\overleftarrow{\mathbf{Q}_{[t]}} \mathbf{S}_{[t-1]}^{C \top}  
++
+\left( \overleftarrow{\mathbf{Q}_{[t]}} \overrightarrow{\mathbf{K}_{[t]}}^\top \odot \mathbf{M} \right)  \left(\mathbf{U}_{[t]} - \overleftarrow{\mathbf{W}_{[t]}} \mathbf{S}_{[t-1]}^{C \top} \right)
+\end{aligned}\]</div>
+<blockquote>
+<p><strong>评论</strong>：这里的 <code>O</code> 与原论文中的表达似乎并不一致。</p>
+</blockquote>
+<p>接下来处理 <code>u_[t]</code> 和 <code>w_[t]</code>。其中，<code>M_{-1} = M - I</code> 表示主对角线为零的严格下三角掩码。</p>
+<p>从 <code>u_[t]</code> 的递推式出发，可以得到：</p>
+<div class="arithmatex">\[\begin{aligned}
+\boldsymbol{u}_{[t]}^{r} &amp;= \beta_{[t]}^{r} \left( \boldsymbol{v}_{[t]}^{r} - \sum_{i=1}^{r-1} \frac{\gamma_{[t]}^{r}}{\gamma_{[t]}^{i}} \boldsymbol{u}_{[t]}^{i} \boldsymbol{k}_{[t]}^{i \top} \boldsymbol{k}_{[t]}^{r} \right)
+\\
+\\
+\Rightarrow
+\mathbf{U}_{[t]} 
+&amp;= 
+\text{Diag}(\boldsymbol{\beta}_{[t]}) \mathbf{V}_{[t]} 
+-
+\text{Diag}(\boldsymbol{\beta}_{[t]}) \left( \overleftarrow{\mathbf{K}_{[t]}} \overrightarrow{\mathbf{K}_{[t]}}^\top \odot \mathbf{M}_{-1}  \right) \mathbf{U}_{[t]} 
+\\
+\\
+\Rightarrow
+\mathbf{U}_{[t]} 
+&amp;= 
+\left(\mathbf{I} + \text{Diag}(\boldsymbol{\beta}_{[t]}) \left( \overleftarrow{\mathbf{K}_{[t]}} \overrightarrow{\mathbf{K}_{[t]}}^\top \odot \mathbf{M}_{-1}  \right) \right)^{-1} \text{Diag}(\boldsymbol{\beta}_{[t]}) \mathbf{V}_{[t]} 
+\end{aligned}\]</div>
+<p>同理，也有：</p>
+<div class="arithmatex">\[\begin{aligned}
+\mathbf{W}_{[t]} 
+= 
+\left(\mathbf{I} + \text{Diag}(\boldsymbol{\beta}_{[t]}) \left( \mathbf{K}_{[t]} \mathbf{K}_{[t]}^\top \odot \mathbf{M}_{-1}  \right) \right)^{-1} \text{Diag}(\boldsymbol{\beta}_{[t]}) \mathbf{K}_{[t]} 
+\end{aligned}\]</div>
+<p>因此，要计算 <code>U_[t]</code> 和 <code>W_[t]</code>，关键就在于下面两个量：</p>
+<div class="arithmatex">\[\begin{aligned}
+\mathbf{T}_{[t]} 
+= 
+\left(\mathbf{I} + \text{Diag}(\boldsymbol{\beta}_{[t]}) \left( \mathbf{K}_{[t]} \mathbf{K}_{[t]}^\top \odot \mathbf{M}_{-1}  \right) \right)^{-1} \text{Diag}(\boldsymbol{\beta}_{[t]})
+\end{aligned}\]</div>
+<p>以及：</p>
+<div class="arithmatex">\[\begin{aligned}
+\mathbf{\widetilde{T}}_{[t]} 
+= 
+\left(\mathbf{I} + \text{Diag}(\boldsymbol{\beta}_{[t]}) \left( \overleftarrow{\mathbf{K}_{[t]}} \overrightarrow{\mathbf{K}_{[t]}}^\top \odot \mathbf{M}_{-1}  \right) \right)^{-1} \text{Diag}(\boldsymbol{\beta}_{[t]})
+\end{aligned}\]</div>
+<p>需要注意的是，这个表达式与原论文中的写法是等价的：</p>
+<div class="arithmatex">\[\begin{aligned}
+\mathbf{\widetilde{T}}_{[t]} 
+= 
+\left(\mathbf{I} + \text{Diag}(\boldsymbol{\beta}_{[t]}) \left( \mathbf{K}_{[t]} \mathbf{K}_{[t]}^\top  \odot \mathbf{\Gamma}_{[t]}  \right)  \odot \mathbf{M}_{-1}  \right)^{-1} \text{Diag}(\boldsymbol{\beta}_{[t]})
+,\quad
+(\mathbf{\Gamma}_{[t]})_{ij} = \frac{\gamma_i}{\gamma_j}
+\end{aligned}\]</div>
+<p>矩阵求逆的部分可以按照 DeltaNet 笔记中的方法处理。</p>
+<h2 id="_4">五、网络结构<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p><img alt="" src="../../../../Linear_Attention/4.%20gated_deltanet/assets/Pasted%20image%2020260405125026.png" />
+<img alt="" src="../../../../Linear_Attention/4.%20gated_deltanet/assets/Pasted%20image%2020260405125347.png" />
+<img alt="" src="../../../../Linear_Attention/4.%20gated_deltanet/assets/Pasted%20image%2020260405131545.png" /></p>
+<h2 id="_5">六、实验<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<h3 id="61">6.1 语言建模<a class="headerlink" href="#61" title="Permanent link">&para;</a></h3>
+<p><img alt="" src="../../../../Linear_Attention/4.%20gated_deltanet/assets/Pasted%20image%2020260405125057.png" />
+<img alt="" src="../../../../Linear_Attention/4.%20gated_deltanet/assets/Pasted%20image%2020260405131751.png" /></p>
+<h3 id="62">6.2 上下文内检索<a class="headerlink" href="#62" title="Permanent link">&para;</a></h3>
+<p><img alt="" src="../../../../Linear_Attention/4.%20gated_deltanet/assets/Pasted%20image%2020260405130802.png" /></p>
+<h3 id="63">6.3 长序列上的长度外推<a class="headerlink" href="#63" title="Permanent link">&para;</a></h3>
+<p><img alt="" src="../../../../Linear_Attention/4.%20gated_deltanet/assets/Pasted%20image%2020260405130852.png" /></p>
+<h3 id="64">6.4 长上下文理解<a class="headerlink" href="#64" title="Permanent link">&para;</a></h3>
+<p><img alt="" src="../../../../Linear_Attention/4.%20gated_deltanet/assets/Pasted%20image%2020260405131518.png" /></p>
+
+
+
+
+
+
+
+
+
+
+
+<style>
+  .md-comments {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--md-default-fg-color--lightest);
+  }
+
+  .md-comments__heading {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1.5rem;
+    color: var(--md-default-fg-color--light);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .md-comments__heading-bar {
+    display: inline-block;
+    width: 3px;
+    height: 1em;
+    background-color: var(--md-primary-fg-color);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .md-comments__heading-line {
+    flex: 1;
+    height: 1px;
+    background: var(--md-default-fg-color--lightest);
+  }
+
+  .md-comments__body {
+    padding: 1.5rem;
+  }
+</style>
+
+<div class="md-comments">
+  <div class="md-comments__heading">
+    <span class="md-comments__heading-bar"></span>
+    <span>Comments</span>
+    <span class="md-comments__heading-line"></span>
+  </div>
+
+  <div class="md-comments__body">
+  <script src="https://giscus.app/client.js"
+          data-repo="mzeromiko/blogs"
+          data-repo-id="R_kgDOR12rgw"
+          data-category="Announcements"
+          data-category-id="DIC_kwDOR12rg84C5s_Q"
+          data-mapping="pathname"
+          data-strict="0"
+          data-reactions-enabled="1"
+          data-emit-metadata="0"
+          data-input-position="bottom"
+          data-theme="preferred_color_scheme"
+          data-lang="en"
+          crossorigin="anonymous"
+          async>
+  </script>
+  </div>
+</div>
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": ["navigation.toc", "navigation.sections", "navigation.expand", "navigation.top", "navigation.indexes", "toc.follow", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

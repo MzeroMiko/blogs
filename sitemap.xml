@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+    <url>
+        <loc>https://mzeromiko.github.io/blogs/</loc>
+        <lastmod>2026-04-19</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://mzeromiko.github.io/blogs/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://mzeromiko.github.io/blogs/zh/"/>
+    </url>
+    <url>
+        <loc>https://mzeromiko.github.io/blogs/Linear_Attention/1.%20retnet/retnet/</loc>
+        <lastmod>2026-04-19</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://mzeromiko.github.io/blogs/Linear_Attention/1.%20retnet/retnet/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://mzeromiko.github.io/blogs/zh/Linear_Attention/1.%20retnet/retnet/"/>
+    </url>
+    <url>
+        <loc>https://mzeromiko.github.io/blogs/Linear_Attention/2.%20gated_linear_attention/gla-fla/</loc>
+        <lastmod>2026-04-19</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://mzeromiko.github.io/blogs/Linear_Attention/2.%20gated_linear_attention/gla-fla/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://mzeromiko.github.io/blogs/zh/Linear_Attention/2.%20gated_linear_attention/gla-fla/"/>
+    </url>
+    <url>
+        <loc>https://mzeromiko.github.io/blogs/Linear_Attention/2.%20gated_linear_attention/gla/</loc>
+        <lastmod>2026-04-19</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://mzeromiko.github.io/blogs/Linear_Attention/2.%20gated_linear_attention/gla/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://mzeromiko.github.io/blogs/zh/Linear_Attention/2.%20gated_linear_attention/gla/"/>
+    </url>
+    <url>
+        <loc>https://mzeromiko.github.io/blogs/Linear_Attention/3.%20deltanet/deltanet-backward/</loc>
+        <lastmod>2026-04-19</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://mzeromiko.github.io/blogs/Linear_Attention/3.%20deltanet/deltanet-backward/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://mzeromiko.github.io/blogs/zh/Linear_Attention/3.%20deltanet/deltanet-backward/"/>
+    </url>
+    <url>
+        <loc>https://mzeromiko.github.io/blogs/Linear_Attention/3.%20deltanet/deltanet-fla/</loc>
+        <lastmod>2026-04-19</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://mzeromiko.github.io/blogs/Linear_Attention/3.%20deltanet/deltanet-fla/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://mzeromiko.github.io/blogs/zh/Linear_Attention/3.%20deltanet/deltanet-fla/"/>
+    </url>
+    <url>
+        <loc>https://mzeromiko.github.io/blogs/Linear_Attention/3.%20deltanet/deltanet/</loc>
+        <lastmod>2026-04-19</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://mzeromiko.github.io/blogs/Linear_Attention/3.%20deltanet/deltanet/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://mzeromiko.github.io/blogs/zh/Linear_Attention/3.%20deltanet/deltanet/"/>
+    </url>
+    <url>
+        <loc>https://mzeromiko.github.io/blogs/Linear_Attention/4.%20gated_deltanet/gdn-backward/</loc>
+        <lastmod>2026-04-19</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://mzeromiko.github.io/blogs/Linear_Attention/4.%20gated_deltanet/gdn-backward/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://mzeromiko.github.io/blogs/zh/Linear_Attention/4.%20gated_deltanet/gdn-backward/"/>
+    </url>
+    <url>
+        <loc>https://mzeromiko.github.io/blogs/Linear_Attention/4.%20gated_deltanet/gdn-fla/</loc>
+        <lastmod>2026-04-19</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://mzeromiko.github.io/blogs/Linear_Attention/4.%20gated_deltanet/gdn-fla/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://mzeromiko.github.io/blogs/zh/Linear_Attention/4.%20gated_deltanet/gdn-fla/"/>
+    </url>
+    <url>
+        <loc>https://mzeromiko.github.io/blogs/Linear_Attention/4.%20gated_deltanet/gdn/</loc>
+        <lastmod>2026-04-19</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://mzeromiko.github.io/blogs/Linear_Attention/4.%20gated_deltanet/gdn/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://mzeromiko.github.io/blogs/zh/Linear_Attention/4.%20gated_deltanet/gdn/"/>
+    </url>
+    <url>
+        <loc>https://mzeromiko.github.io/blogs/Linear_Attention/5.%20kimi_linear/kda-backward/</loc>
+        <lastmod>2026-04-19</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://mzeromiko.github.io/blogs/Linear_Attention/5.%20kimi_linear/kda-backward/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://mzeromiko.github.io/blogs/zh/Linear_Attention/5.%20kimi_linear/kda-backward/"/>
+    </url>
+    <url>
+        <loc>https://mzeromiko.github.io/blogs/Linear_Attention/5.%20kimi_linear/kda-fla/</loc>
+        <lastmod>2026-04-19</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://mzeromiko.github.io/blogs/Linear_Attention/5.%20kimi_linear/kda-fla/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://mzeromiko.github.io/blogs/zh/Linear_Attention/5.%20kimi_linear/kda-fla/"/>
+    </url>
+    <url>
+        <loc>https://mzeromiko.github.io/blogs/Linear_Attention/5.%20kimi_linear/kda/</loc>
+        <lastmod>2026-04-19</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://mzeromiko.github.io/blogs/Linear_Attention/5.%20kimi_linear/kda/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://mzeromiko.github.io/blogs/zh/Linear_Attention/5.%20kimi_linear/kda/"/>
+    </url>
+    <url>
+        <loc>https://mzeromiko.github.io/blogs/Linear_Attention/6.%20DPLR/dplr/</loc>
+        <lastmod>2026-04-19</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://mzeromiko.github.io/blogs/Linear_Attention/6.%20DPLR/dplr/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://mzeromiko.github.io/blogs/zh/Linear_Attention/6.%20DPLR/dplr/"/>
+    </url>
+    <url>
+        <loc>https://mzeromiko.github.io/blogs/zh/</loc>
+        <lastmod>2026-04-19</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://mzeromiko.github.io/blogs/zh/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://mzeromiko.github.io/blogs/"/>
+    </url>
+    <url>
+        <loc>https://mzeromiko.github.io/blogs/zh/Linear_Attention/1.%20retnet/retnet/</loc>
+        <lastmod>2026-04-19</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://mzeromiko.github.io/blogs/zh/Linear_Attention/1.%20retnet/retnet/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://mzeromiko.github.io/blogs/Linear_Attention/1.%20retnet/retnet/"/>
+    </url>
+    <url>
+        <loc>https://mzeromiko.github.io/blogs/zh/Linear_Attention/2.%20gated_linear_attention/gla-fla/</loc>
+        <lastmod>2026-04-19</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://mzeromiko.github.io/blogs/zh/Linear_Attention/2.%20gated_linear_attention/gla-fla/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://mzeromiko.github.io/blogs/Linear_Attention/2.%20gated_linear_attention/gla-fla/"/>
+    </url>
+    <url>
+        <loc>https://mzeromiko.github.io/blogs/zh/Linear_Attention/2.%20gated_linear_attention/gla/</loc>
+        <lastmod>2026-04-19</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://mzeromiko.github.io/blogs/zh/Linear_Attention/2.%20gated_linear_attention/gla/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://mzeromiko.github.io/blogs/Linear_Attention/2.%20gated_linear_attention/gla/"/>
+    </url>
+    <url>
+        <loc>https://mzeromiko.github.io/blogs/zh/Linear_Attention/3.%20deltanet/deltanet-backward/</loc>
+        <lastmod>2026-04-19</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://mzeromiko.github.io/blogs/zh/Linear_Attention/3.%20deltanet/deltanet-backward/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://mzeromiko.github.io/blogs/Linear_Attention/3.%20deltanet/deltanet-backward/"/>
+    </url>
+    <url>
+        <loc>https://mzeromiko.github.io/blogs/zh/Linear_Attention/3.%20deltanet/deltanet-fla/</loc>
+        <lastmod>2026-04-19</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://mzeromiko.github.io/blogs/zh/Linear_Attention/3.%20deltanet/deltanet-fla/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://mzeromiko.github.io/blogs/Linear_Attention/3.%20deltanet/deltanet-fla/"/>
+    </url>
+    <url>
+        <loc>https://mzeromiko.github.io/blogs/zh/Linear_Attention/3.%20deltanet/deltanet/</loc>
+        <lastmod>2026-04-19</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://mzeromiko.github.io/blogs/zh/Linear_Attention/3.%20deltanet/deltanet/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://mzeromiko.github.io/blogs/Linear_Attention/3.%20deltanet/deltanet/"/>
+    </url>
+    <url>
+        <loc>https://mzeromiko.github.io/blogs/zh/Linear_Attention/4.%20gated_deltanet/gdn-backward/</loc>
+        <lastmod>2026-04-19</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://mzeromiko.github.io/blogs/zh/Linear_Attention/4.%20gated_deltanet/gdn-backward/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://mzeromiko.github.io/blogs/Linear_Attention/4.%20gated_deltanet/gdn-backward/"/>
+    </url>
+    <url>
+        <loc>https://mzeromiko.github.io/blogs/zh/Linear_Attention/4.%20gated_deltanet/gdn-fla/</loc>
+        <lastmod>2026-04-19</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://mzeromiko.github.io/blogs/zh/Linear_Attention/4.%20gated_deltanet/gdn-fla/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://mzeromiko.github.io/blogs/Linear_Attention/4.%20gated_deltanet/gdn-fla/"/>
+    </url>
+    <url>
+        <loc>https://mzeromiko.github.io/blogs/zh/Linear_Attention/4.%20gated_deltanet/gdn/</loc>
+        <lastmod>2026-04-19</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://mzeromiko.github.io/blogs/zh/Linear_Attention/4.%20gated_deltanet/gdn/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://mzeromiko.github.io/blogs/Linear_Attention/4.%20gated_deltanet/gdn/"/>
+    </url>
+    <url>
+        <loc>https://mzeromiko.github.io/blogs/zh/Linear_Attention/5.%20kimi_linear/kda-backward/</loc>
+        <lastmod>2026-04-19</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://mzeromiko.github.io/blogs/zh/Linear_Attention/5.%20kimi_linear/kda-backward/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://mzeromiko.github.io/blogs/Linear_Attention/5.%20kimi_linear/kda-backward/"/>
+    </url>
+    <url>
+        <loc>https://mzeromiko.github.io/blogs/zh/Linear_Attention/5.%20kimi_linear/kda-fla/</loc>
+        <lastmod>2026-04-19</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://mzeromiko.github.io/blogs/zh/Linear_Attention/5.%20kimi_linear/kda-fla/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://mzeromiko.github.io/blogs/Linear_Attention/5.%20kimi_linear/kda-fla/"/>
+    </url>
+    <url>
+        <loc>https://mzeromiko.github.io/blogs/zh/Linear_Attention/5.%20kimi_linear/kda/</loc>
+        <lastmod>2026-04-19</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://mzeromiko.github.io/blogs/zh/Linear_Attention/5.%20kimi_linear/kda/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://mzeromiko.github.io/blogs/Linear_Attention/5.%20kimi_linear/kda/"/>
+    </url>
+    <url>
+        <loc>https://mzeromiko.github.io/blogs/zh/Linear_Attention/6.%20DPLR/dplr/</loc>
+        <lastmod>2026-04-19</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://mzeromiko.github.io/blogs/zh/Linear_Attention/6.%20DPLR/dplr/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://mzeromiko.github.io/blogs/Linear_Attention/6.%20DPLR/dplr/"/>
+    </url>
+</urlset>

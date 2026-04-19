@@ -1,0 +1,2615 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://mzeromiko.github.io/blogs/Linear_Attention/2.%20gated_linear_attention/gla/">
+      
+      
+        <link rel="prev" href="../gla-fla/">
+      
+      
+        <link rel="next" href="../../3.%20deltanet/deltanet-backward/">
+      
+      
+        
+          <link rel="alternate" href="./" hreflang="en">
+        
+          <link rel="alternate" href="../../../zh/Linear_Attention/2.%20gated_linear_attention/gla/" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Reading Notes: Gated Linear Attention - Reading Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans+SC:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Noto Sans SC";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#reading-notes-gated-linear-attention" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Reading Notes" class="md-header__button md-logo" aria-label="Reading Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 2-5 4.5v11l5-4.5zM6.5 5C4.55 5 2.45 5.4 1 6.5v14.66c0 .25.25.5.5.5.1 0 .15-.07.25-.07 1.35-.65 3.3-1.09 4.75-1.09 1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.31 4.75 1.06.1.05.15.03.25.03.25 0 .5-.25.5-.5V6.5c-.6-.45-1.25-.75-2-1V19c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V6.5C10.55 5.4 8.45 5 6.5 5"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Reading Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Reading Notes: Gated Linear Attention
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Dark Mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark Mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Light Mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light Mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../zh/Linear_Attention/2.%20gated_linear_attention/gla/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+    <a href="https://mzeromiko.github.io" title="Personal Homepage" class="md-header__button md-icon" target="_blank" rel="noopener">
+      <svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"><g fill-rule="evenodd"><path d="M357 124l-3 6-42 43-42 42v105c2 8 8 13 15 15h58c7-3 13-8 14-16V124" fill="#bc22f3"/><path d="M41 219l1 99c1 8 7 15 15 17h57c7-1 12-7 14-14l1-2V215l-42-42c-45-45-43-43-44-47a23 23 0 0 1-1-3c-1-1-1 1-1 96m271-46l-42 42 42-42" fill="#e32a77"/><path d="M93 65c-2 0-5 1-7 3l-41 39c-3 4-4 11-3 15v2l3 6 104 104c-5-6-5-14 0-21l26-26 25-26-45-44-47-47c-4-4-10-6-15-5" fill="#34e3bb"/><path d="M301 65l-8 3-144 145c-5 7-4 15 0 21 1 3 37 38 39 40 8 5 17 4 24-1l143-144c4-6 4-14-1-21l-41-40c-3-3-8-4-12-3" fill="#fbdb04"/><path d="M145 223l1 1a13 13 0 0 0 0-1h-1" fill="#6c9c9c"/></g></svg>
+    </a>
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Reading Notes" class="md-nav__button md-logo" aria-label="Reading Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 2-5 4.5v11l5-4.5zM6.5 5C4.55 5 2.45 5.4 1 6.5v14.66c0 .25.25.5.5.5.1 0 .15-.07.25-.07 1.35-.65 3.3-1.09 4.75-1.09 1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.31 4.75 1.06.1.05.15.03.25.03.25 0 .5-.25.5-.5V6.5c-.6-.45-1.25-.75-2-1V19c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V6.5C10.55 5.4 8.45 5 6.5 5"/></svg>
+
+    </a>
+    Reading Notes
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading Notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Linear Attention
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Linear Attention
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_1" id="__nav_2_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1. retnet
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    1. retnet
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../1.%20retnet/retnet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading Notes: RetNet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2. gated linear attention
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    2. gated linear attention
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gla-fla/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading Notes: Implementation Notes for GLA in FLA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading Notes: Gated Linear Attention
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading Notes: Gated Linear Attention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-motivation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Motivation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-notation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Notation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-background" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Background
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Background">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-self-attention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Self-Attention
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-linear-attention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Linear Attention
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-chunkwise-linear-attention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Chunkwise Linear Attention
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-flash-linear-attention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Flash Linear Attention
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Flash Linear Attention">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-design-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Design Principles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-algorithm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Algorithm
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-gated-linear-attention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Gated Linear Attention
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Gated Linear Attention">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-recurrent-form" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Recurrent Form
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-chunkwise-recurrent-form" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Chunkwise Recurrent Form
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-secondary-level-chunking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Secondary-Level Chunking
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-backpropagation-for-gla" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Backpropagation for GLA
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Backpropagation for GLA">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-recurrent-form" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Recurrent Form
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-mathematical-preliminaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Mathematical Preliminaries
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-backward-pass-for-the-chunkwise-recurrent-form" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Backward Pass for the Chunkwise Recurrent Form
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-network-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Network Architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Network Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-token-mixing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 Token Mixing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-channel-mixing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Channel Mixing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-a-single-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 A Single Layer
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-experiments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Experiments
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Experiments">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-data-and-tokenization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Data and Tokenization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-baselines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 Baselines
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-training-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 Training Setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84-evaluation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4 Evaluation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#85-recall-tasks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.5 Recall Tasks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#86-long-context-training" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.6 Long-Context Training
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#87-ablation-study" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.7 Ablation Study
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3. deltanet
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    3. deltanet
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../3.%20deltanet/deltanet-backward/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading Notes: Backward Pass for DeltaNet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../3.%20deltanet/deltanet-fla/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading Notes: Implementation Notes for DeltaNet in FLA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../3.%20deltanet/deltanet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading Notes: DeltaNet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    4. gated deltanet
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    4. gated deltanet
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../4.%20gated_deltanet/gdn-backward/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading Notes: Backward Pass for Gated DeltaNet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../4.%20gated_deltanet/gdn-fla/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading Notes: Implementation Notes for GDN in FLA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../4.%20gated_deltanet/gdn/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading Notes: Gated Delta Networks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    5. kimi linear
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    5. kimi linear
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../5.%20kimi_linear/kda-backward/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading Notes: Backward Pass for Kimi Delta Attention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../5.%20kimi_linear/kda-fla/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading Notes: Implementation Notes for KDA in FLA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../5.%20kimi_linear/kda/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading Notes: Kimi Delta Attention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_6" id="__nav_2_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    6. DPLR
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    6. DPLR
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../6.%20DPLR/dplr/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading Notes: Diagonal Plus Low Rank
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-motivation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Motivation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-notation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Notation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-background" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Background
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Background">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-self-attention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Self-Attention
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-linear-attention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Linear Attention
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-chunkwise-linear-attention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Chunkwise Linear Attention
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-flash-linear-attention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Flash Linear Attention
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Flash Linear Attention">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-design-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Design Principles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-algorithm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Algorithm
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-gated-linear-attention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Gated Linear Attention
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Gated Linear Attention">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-recurrent-form" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Recurrent Form
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-chunkwise-recurrent-form" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Chunkwise Recurrent Form
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-secondary-level-chunking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Secondary-Level Chunking
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-backpropagation-for-gla" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Backpropagation for GLA
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Backpropagation for GLA">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-recurrent-form" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Recurrent Form
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-mathematical-preliminaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Mathematical Preliminaries
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-backward-pass-for-the-chunkwise-recurrent-form" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Backward Pass for the Chunkwise Recurrent Form
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-network-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Network Architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Network Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-token-mixing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 Token Mixing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-channel-mixing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Channel Mixing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-a-single-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 A Single Layer
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-experiments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Experiments
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Experiments">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-data-and-tokenization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Data and Tokenization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-baselines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 Baselines
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-training-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 Training Setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84-evaluation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4 Evaluation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#85-recall-tasks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.5 Recall Tasks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#86-long-context-training" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.6 Long-Context Training
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#87-ablation-study" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.7 Ablation Study
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="reading-notes-gated-linear-attention">Reading Notes: Gated Linear Attention<a class="headerlink" href="#reading-notes-gated-linear-attention" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p><strong>Paper</strong>: <a href="https://arxiv.org/pdf/2312.06635">https://arxiv.org/pdf/2312.06635</a><br />
+<strong>Code</strong>: <a href="https://github.com/fla-org/flash-linear-attention/">https://github.com/fla-org/flash-linear-attention</a><br />
+<strong>Disclaimer</strong>: These are personal reading notes. Some derivations are my own and may be incorrect, so they should be cross-checked with the official implementation later.</p>
+</blockquote>
+<h2 id="1-motivation">1. Motivation<a class="headerlink" href="#1-motivation" title="Permanent link">&para;</a></h2>
+<p>The main goal of this work is to design a hardware-efficient training algorithm for linear attention.</p>
+<h2 id="2-notation">2. Notation<a class="headerlink" href="#2-notation" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Bold uppercase letters such as <code>S</code> and <code>Q</code> denote matrices.</li>
+<li>Symbols like <code>q_t</code> and <code>k_t</code> denote column vectors with shape <code>[d, 1]</code>, while matrices are written in shape <code>[L, d]</code>. Because of this convention, some transpose operations will appear.</li>
+<li>Symbols like <code>W_t</code> denote learnable parameters.</li>
+<li><code>q_t</code> refers to the <code>t</code>-th row of <code>Q</code>.</li>
+<li><span class="arithmatex">\(\square_{[t]} = \square_{[t]}^{1:C} \in \mathbb{R}^{C \times d} \quad\text{for}\quad \square \in \{ \mathbf{Q, K, V,...} \}\)</span></li>
+</ol>
+<blockquote>
+<p><strong>Note</strong>: My notation is slightly different from the original paper. In the paper, vectors are written as row vectors. So all formulas in these notes are rewritten accordingly. There may be mistakes.</p>
+</blockquote>
+<h2 id="3-background">3. Background<a class="headerlink" href="#3-background" title="Permanent link">&para;</a></h2>
+<h3 id="31-self-attention">3.1 Self-Attention<a class="headerlink" href="#31-self-attention" title="Permanent link">&para;</a></h3>
+<div class="arithmatex">\[\begin{aligned}
+\boldsymbol{q}_t, \boldsymbol{k}_t, \boldsymbol{v}_t &amp;= W_Q \boldsymbol{x}_t , W_K \boldsymbol{x}_t , W_V \boldsymbol{x}_t  
+\\
+\\
+\boldsymbol{o}_t = \frac{\sum_{i=1}^t \boldsymbol{v}_i \exp(\boldsymbol{k}_i^\top \boldsymbol{q}_t )}{\sum_{i=1}^t \exp(\boldsymbol{k}_i^\top \boldsymbol{q}_t )}
+&amp;\Leftrightarrow
+\mathbf{O} = \text{softmax}\left(\mathbf{Q}\mathbf{K}^\top \odot \mathbf{M}\right) \mathbf{V}
+\end{aligned}\]</div>
+<h3 id="32-linear-attention">3.2 Linear Attention<a class="headerlink" href="#32-linear-attention" title="Permanent link">&para;</a></h3>
+<div class="arithmatex">\[\begin{aligned}
+\mathbf{o}_t &amp;= \frac{\sum_{i=1}^t  \mathbf{v}_i \phi(\mathbf{k}_i)^\top \phi(\mathbf{q}_t)}
+{\sum_{i=1}^t \phi(\mathbf{k}_i)^\top \phi(\mathbf{q}_t)} 
+\\
+\\
+\mathbf{S}_t &amp;= \sum_{i=1}^t \boldsymbol{v}_i \phi(\boldsymbol{k}_i)^\top  \in \mathbb{R}^{d \times d}
+, \quad 
+\boldsymbol{z}_t = \sum_{i=1}^t \phi(\boldsymbol{k}_i) \in \mathbb{R}^{d \times 1}
+\\
+\\
+\mathbf{S}_t &amp;= \mathbf{S}_{t-1} + \boldsymbol{v}_t \phi(\boldsymbol{k}_t)^\top 
+, \quad 
+\boldsymbol{z}_t = \boldsymbol{z}_{t-1} + \phi(\boldsymbol{k}_t)
+, \quad 
+\boldsymbol{o}_t = \frac{\mathbf{S}_t \phi(\boldsymbol{q}_t)}{\boldsymbol{z}_t^\top\phi(\boldsymbol{q}_t)}.
+\end{aligned}\]</div>
+<p>A useful perspective is that linear attention can be implemented recurrently by maintaining a running state. Some previous work observed that even if we remove both the kernel feature map and the normalization term, performance can still remain surprisingly strong. In that simplified case:</p>
+<div class="arithmatex">\[\begin{aligned}
+\mathbf{S}_t = \mathbf{S}_{t-1} +  \boldsymbol{v}_t \boldsymbol{k}_t^\top
+, \quad 
+\boldsymbol{o}_t = \mathbf{S}_t \boldsymbol{q}_t
+\end{aligned}\]</div>
+<h3 id="33-chunkwise-linear-attention">3.3 Chunkwise Linear Attention<a class="headerlink" href="#33-chunkwise-linear-attention" title="Permanent link">&para;</a></h3>
+<p>A common trick is to split the sequence <code>X</code> into non-overlapping chunks of length <code>C</code>.</p>
+<div class="arithmatex">\[\begin{aligned}
+\square_{[t]}^i = \square_{tC+i}
+,\quad
+\square_{[t]} = \square_{[t]}^{1:C} \in \mathbb{R}^{C \times d}
+\quad \text{for } 
+\square \in \{ \mathbf{Q, K, V, O} \}
+\end{aligned}\]</div>
+<p>Under this chunked view, the recurrent state can be updated chunk by chunk, and the output within each chunk can be decomposed into an inter-chunk part and an intra-chunk part.</p>
+<div class="arithmatex">\[\begin{aligned}
+\mathbf{S}_{[t]}^{C} &amp;= \mathbf{S}_{[t-1]}^{C} + \sum_{i=tC+1}^{tC+C} \boldsymbol{v}_i \boldsymbol{k}_i^\top  
+\quad \in \mathbb{R}^{d \times d}
+\\
+\\
+\mathbf{O}_{[t]} &amp;= \mathbf{Q}_{[t]} \mathbf{S}_{[t]}  + \left( \mathbf{Q}_{[t]} \mathbf{K}_{[t]}^\top \odot \mathbf{M}\right) \mathbf{V}_{[t]}  
+\end{aligned}\]</div>
+<h2 id="4-flash-linear-attention">4. Flash Linear Attention<a class="headerlink" href="#4-flash-linear-attention" title="Permanent link">&para;</a></h2>
+<h3 id="41-design-principles">4.1 Design Principles<a class="headerlink" href="#41-design-principles" title="Permanent link">&para;</a></h3>
+<p>The design of Flash Linear Attention (FLA) follows a few practical principles:</p>
+<ol>
+<li>Make full use of GPU SMs.</li>
+<li>Support the batch-size = 1 regime, which requires parallelism along the time dimension.</li>
+<li>Use Tensor Cores whenever possible.</li>
+<li>Carefully optimize across the memory hierarchy, especially SRAM and HBM.</li>
+<li>Parallelize within chunks while keeping chunk-to-chunk recurrence serial.</li>
+</ol>
+<h3 id="42-algorithm">4.2 Algorithm<a class="headerlink" href="#42-algorithm" title="Permanent link">&para;</a></h3>
+<p>FLA implements two chunkwise algorithms:</p>
+<p><img alt="" src="../assets/Pasted%20image%2020260324141311.png" /></p>
+<p><img alt="" src="../assets/Pasted%20image%2020260324141321.png" /></p>
+<blockquote>
+<p><strong>Comment</strong>: A fully serial scheme—parallel only inside each chunk, and serial across chunks—also seems fairly reasonable at first glance.</p>
+</blockquote>
+<h2 id="5-gated-linear-attention">5. Gated Linear Attention<a class="headerlink" href="#5-gated-linear-attention" title="Permanent link">&para;</a></h2>
+<h3 id="51-recurrent-form">5.1 Recurrent Form<a class="headerlink" href="#51-recurrent-form" title="Permanent link">&para;</a></h3>
+<p>The general recurrent form can be written as:</p>
+<div class="arithmatex">\[\begin{aligned}
+\mathbf{S}_t = \mathbf{G}_t \odot \mathbf{S}_{t-1} + \boldsymbol{v}_t \boldsymbol{k}_t^\top
+,\quad
+\boldsymbol{o}_t = \mathbf{S}_t \boldsymbol{q}_t
+\end{aligned}\]</div>
+<p>For GLA, the gate is parameterized in a low-rank way:</p>
+<div class="arithmatex">\[\begin{aligned}
+\mathbf{S}_t = ( \mathbf{1} \boldsymbol{\alpha}_t^\top) \odot \mathbf{S}_{t-1} + \boldsymbol{v}_t \boldsymbol{k}_t^\top
+=
+\mathbf{S}_{t-1}\text{Diag}(\boldsymbol{\alpha}_t)  + \boldsymbol{v}_t \boldsymbol{k}_t^\top
+\end{aligned}\]</div>
+<p><img alt="" src="../assets/Pasted%20image%2020260324141634.png" /></p>
+<p>A couple of key points from the paper:</p>
+<ol>
+<li>The core design challenge in GLA is how to balance <strong>parameter efficiency</strong>, <strong>state size</strong>, and <strong>training efficiency</strong> when parameterizing the gate.</li>
+<li>In Mamba, the gate is formed from a learned matrix <code>A</code> together with data-dependent <code>alpha_t</code>, which results in a full-rank gate. The downside is that this form cannot be cleanly expressed as matrix multiplication, so it cannot directly exploit Tensor Cores. Mamba addresses this with a prefix-sum-style algorithm that makes good use of SRAM, but SRAM capacity becomes a bottleneck when scaling to larger hidden states. This is one reason why it can struggle on recall-intensive tasks.</li>
+</ol>
+<h3 id="52-chunkwise-recurrent-form">5.2 Chunkwise Recurrent Form<a class="headerlink" href="#52-chunkwise-recurrent-form" title="Permanent link">&para;</a></h3>
+<p>To derive a chunkwise implementation for GLA, the paper introduces several auxiliary variables:</p>
+<div class="arithmatex">\[\begin{aligned}
+\boldsymbol{\gamma}_{[t]}^r &amp;= \prod_{i=tC+1}^{tC+r} \boldsymbol{\alpha}_i \in \mathbb{R}^{d \times 1}
+, \quad
+\\
+\\
+\mathbf{H}_{[t]}^{r} 
+&amp;= \sum_{i=1}^{r} 
+(\boldsymbol{v}_{[t]}^{i} \boldsymbol{k}_{[t]}^{i\top})  
+\text{Diag}(\frac{\boldsymbol{\gamma}_{[t]}^{r}}{\boldsymbol{\gamma}_{[t]}^{i}}) 
+\in \mathbb{R}^{d \times d}
+\\
+\\
+\mathbf{\Gamma}_{[t]} &amp;= [ \boldsymbol{\gamma}_{[t]}^{1}, \boldsymbol{\gamma}_{[t]}^{2}, \dots, \boldsymbol{\gamma}_{[t]}^{C} ]^\top \in \mathbb{R}^{C \times d}
+\\
+\\
+\overleftarrow{\boldsymbol{q}_{[t]}^{i}} &amp;= \boldsymbol{q}_{[t]}^{i} \odot \boldsymbol{\gamma}_{[t]}^{i}
+, \quad
+\overrightarrow{\boldsymbol{k}_{[t]}^{i}} = \frac{\boldsymbol{k}_{[t]}^{i}}{\boldsymbol{\gamma}_{[t]}^{i}}
+\\
+\\
+\overleftarrow{\mathbf{Q}_{[t]}} &amp;= \mathbf{Q}_{[t]} \odot \mathbf{\Gamma}_{[t]}
+, \quad
+\overrightarrow{\mathbf{K}_{[t]}} = \mathbf{Q}_{[t]} \oslash \mathbf{\Gamma}_{[t]}
+\end{aligned}\]</div>
+<p>Using these definitions, the chunkwise recurrent state can be expressed as:</p>
+<div class="arithmatex">\[\begin{aligned}
+\mathbf{H}_{[0]}^{r} &amp;= \mathbf{S}_{r}
+\\
+\\
+\mathbf{S}_{[t]}^{r} &amp;= \mathbf{S}_{[t-1]}^{C} \text{Diag}(\boldsymbol{\gamma}_{[t]}^{r}) 
++ \mathbf{H}_{[t]}^{r}
+\\
+\\
+\mathbf{H}_{[t]}^{r} 
+&amp;= \sum_{i=1}^{r} (\boldsymbol{v}_{[t]}^{i} \boldsymbol{k}_{[t]}^{i\top}) 
+\text{Diag}(\frac{\boldsymbol{\gamma}_{[t]}^{r}}{\boldsymbol{\gamma}_{[t]}^{i}}) 
+=  \sum_{i=1}^{r} \boldsymbol{v}_{[t]}^{i}\left(\frac{\boldsymbol{k}_{[t]}^{i}}{\boldsymbol{\gamma}_{[t]}^{i}}\right)^{\top} \text{Diag}(\boldsymbol{\gamma}_{[t]}^{r})
+\end{aligned}\]</div>
+<p>From there, the output can be rewritten into a form that separates the contribution from previous chunks and the contribution from the current chunk.</p>
+<div class="arithmatex">\[\begin{aligned}
+\boldsymbol{o}_{[t]}^{r} &amp;= \mathbf{S}_{[t]}^{r} \boldsymbol{q}_{[t]}^{r} =  \mathbf{S}_{[t-1]}^{C}
+\text{Diag}(\boldsymbol{\gamma}_{[t]}^{r}) \boldsymbol{q}_{[t]}^{r} + \mathbf{H}_{[t]}^{r} \boldsymbol{q}_{[t]}^{r}
+\\ 
+\\
+\Rightarrow \boldsymbol{o}_{[t]}^{r} &amp;= \mathbf{S}_{[t-1]}^{C} \overleftarrow{\boldsymbol{q}_{[t]}^{r}} + \sum_{i=1}^{r} \boldsymbol{v}_{[t]}^{i} \left(\overrightarrow{\boldsymbol{k}_{[t]}^{i}}\right)^{\top} \overleftarrow{\boldsymbol{q}_{[t]}^{r}}
+\end{aligned}\]</div>
+<p>In matrix form, this becomes:</p>
+<div class="arithmatex">\[\begin{aligned}
+\mathbf{O}_{[t]} &amp;= \overleftarrow{\boldsymbol{Q}_{[t]}}
+\mathbf{S}_{[t-1]}^{C \top} 
++
+\left( \overleftarrow{\mathbf{Q}_{[t]}} \left(\overrightarrow{\mathbf{K}_{[t]}} \right)^\top \odot \mathbf{M} \right) \mathbf{V}_{[t]}
+\end{aligned}\]</div>
+<p>The chunk-level terminal state <code>S_[t]^C</code> can also be precomputed recursively:</p>
+<div class="arithmatex">\[\begin{aligned}
+\mathbf{S}_{[t]}^{C} = \mathbf{S}_{[t-1]}^{C} 
+\text{Diag}(\boldsymbol{\gamma}_{[t]}^{C}) 
++ \mathbf{H}_{[t]}^{C}
+=
+\left(\mathbf{S}_{[t-1]}^{C} 
++ \mathbf{V}_{[t]}^\top \overrightarrow{\boldsymbol{K}_{[t]}} \right) \text{Diag}(\boldsymbol{\gamma}_{[t]}^{C}) 
+\end{aligned}\]</div>
+<p>This reformulation is important because it turns the computation into forms that are much more hardware-friendly.</p>
+<h3 id="53-secondary-level-chunking">5.3 Secondary-Level Chunking<a class="headerlink" href="#53-secondary-level-chunking" title="Permanent link">&para;</a></h3>
+<p>When the chunk size becomes large, the decay term inside <code>Q_left K_right^T</code> can become extremely small, which may introduce numerical precision issues.</p>
+<p>To address this, GLA further divides each chunk into <strong>sub-chunks</strong> and computes long-range decay in the <strong>log domain</strong>.</p>
+<p><img alt="500" src="../assets/Pasted%20image%2020260324161324.png" /></p>
+<p>The paper introduces <code>P_[t][tau]</code> for sub-chunk interactions, assuming each sub-chunk has length <code>T</code>:</p>
+<div class="arithmatex">\[\begin{aligned}
+\mathbf{P}_{[t][\tau]} = \overleftarrow{\boldsymbol{Q}_{[t]}} \left(\overrightarrow{\boldsymbol{K}_{[\tau]}} \right)^\top \odot \mathbf{M}_{[t][\tau]}
+\end{aligned}\]</div>
+<p>This leads to three cases:</p>
+<ul>
+<li><strong>Case 1 (pink)</strong>: diagonal sub-chunks. These require higher numerical precision, so they are computed element-wise in full precision.</li>
+<li><strong>Case 2 (orange)</strong>: off-diagonal sub-chunks. These are computed using half-precision matrix operations, independently for each sub-chunk pair.</li>
+<li><strong>Case 3 (gray)</strong>: needed only in the fully parallel mode, not in the chunkwise mode.</li>
+</ul>
+<blockquote>
+<p><strong>Comment</strong>: If Case 3 does need to be computed, its implementation should be the same as the orange case.</p>
+</blockquote>
+<p>For the diagonal case:</p>
+<div class="arithmatex">\[\begin{aligned}
+(\mathbf{P}_{[t][\tau]})_{i, j} 
+=
+\sum_{d} (\boldsymbol{q}_{[t]}^{i})_{d} ~(\boldsymbol{k}_{[\tau]}^{j})_{d} 
+~ \exp(\log \boldsymbol{\gamma}_{[t]}^{i}  - \log \boldsymbol{\gamma}_{[\tau]}^{j}  ) 
+，\quad t=\tau, i&gt;j
+\end{aligned}\]</div>
+<p>For the off-diagonal case:</p>
+<div class="arithmatex">\[\begin{aligned}
+\mathbf{P}_{[t][\tau]} &amp;= \overleftarrow{\boldsymbol{Q}_{[t]}} \left(\overrightarrow{\boldsymbol{K}_{[\tau]}} \right)^\top
+,\quad t \ne \tau
+\\ 
+\Rightarrow
+\mathbf{P}_{[t][\tau]} &amp;= \left(\boldsymbol{Q}_{[t]} \odot \exp(\log \boldsymbol{\gamma}_{[t]}^{1:T}) \right) \left(\boldsymbol{K}_{[\tau]} \odot \exp(-\log \boldsymbol{\gamma}_{[\tau]}^{1:T}) \right)^\top
+,\quad t &gt; \tau
+\end{aligned}\]</div>
+<h2 id="6-backpropagation-for-gla">6. Backpropagation for GLA<a class="headerlink" href="#6-backpropagation-for-gla" title="Permanent link">&para;</a></h2>
+<h3 id="61-recurrent-form">6.1 Recurrent Form<a class="headerlink" href="#61-recurrent-form" title="Permanent link">&para;</a></h3>
+<p>Forward pass:</p>
+<div class="arithmatex">\[\begin{aligned}
+\mathbf{S}_t = \mathbf{G}_t \odot \mathbf{S}_{t-1} + \boldsymbol{v}_t \boldsymbol{k}_t^\top
+,\quad
+\boldsymbol{o}_t = \mathbf{S}_t \boldsymbol{q}_t
+\end{aligned}\]</div>
+<p>Backward pass:</p>
+<div class="arithmatex">\[\begin{aligned}
+\delta \boldsymbol{o}_t &amp;= \frac{\partial L}{\partial \boldsymbol{o}_t}
+\\
+\\
+\delta \mathbf{G}_t &amp;= \frac{\partial L}{\partial \mathbf{G}_t} = \delta \mathbf{S}_t \odot \mathbf{S}_{t-1}
+\\
+\\
+\delta \mathbf{S}_t &amp;= \mathbf{G}_{t+1} \odot \delta \mathbf{S}_{t+1} + \delta \boldsymbol{o}_t \boldsymbol{q}_t^\top
+\\
+\\
+\delta \boldsymbol{q}_t &amp;= \frac{\partial L}{\partial \boldsymbol{q}_t} = \mathbf{S}_t^\top \delta \boldsymbol{o}_t
+\\
+\\
+\delta \boldsymbol{v}_t &amp;= \frac{\partial L}{\partial \boldsymbol{v}_t} = \delta  \mathbf{S}_t \boldsymbol{k}_t
+\\
+\\
+\delta \boldsymbol{k}_t &amp;= \frac{\partial L}{\partial \boldsymbol{k}_t} = \delta  \mathbf{S}_t^\top \boldsymbol{v}_t
+\end{aligned}\]</div>
+<p>For GLA specifically, the gradient with respect to the gate parameter has an additional simplified form:</p>
+<div class="arithmatex">\[\begin{aligned}
+\delta \boldsymbol{\alpha}_t = \delta \mathbf{G}_t^\top \mathbf{1}
+\end{aligned}\]</div>
+<h3 id="62-mathematical-preliminaries">6.2 Mathematical Preliminaries<a class="headerlink" href="#62-mathematical-preliminaries" title="Permanent link">&para;</a></h3>
+<p>Before deriving the chunkwise backward pass, it helps to review a few standard matrix calculus facts.</p>
+<p><strong>Definition</strong></p>
+<div class="arithmatex">\[\begin{aligned}
+\mathbf{A} \in \mathbb{R}^{m \times n}
+, \quad 
+\mathbf{B} \in \mathbb{R}^{n \times k}
+, \quad 
+\mathbf{C} = \mathbf{A} \mathbf{B}
+, \quad 
+y = f(\mathbf{C})
+, \quad 
+\delta \mathbf{C} := \frac{\partial y}{\partial \mathbf{C}}
+\end{aligned}\]</div>
+<p><strong>Trace identities</strong></p>
+<div class="arithmatex">\[\begin{aligned}
+\text{Tr}(ABC) &amp;= \text{Tr}(BCA) = \text{Tr}(CAB)
+\\
+\\
+\text{Tr}(A^\top (B \odot C)) &amp;= Tr((A \odot B)^\top C)=Tr((A \odot C)^\top B)
+\end{aligned}\]</div>
+<p><strong>Differential rules</strong></p>
+<div class="arithmatex">\[\begin{aligned}
+d(\mathbf{A}\mathbf{B}) &amp;= (\mathbf{A} (d \mathbf{B}) + (d \mathbf{A}) \mathbf{B})
+\\
+\\
+d(\mathbf{A} \odot \mathbf{B}) &amp;= (\mathbf{A} \odot (d \mathbf{B}) + (d \mathbf{A}) \odot \mathbf{B})
+\end{aligned}\]</div>
+<p><strong>Gradient of matrix multiplication</strong></p>
+<div class="arithmatex">\[\begin{aligned}
+dy 
+= \text{Tr}\left( (\frac{\partial y}{\partial \mathbf{C}})^\top  d \mathbf{C}\right) 
+&amp;= \text{Tr}\left( (\delta \mathbf{C})^\top  (d \mathbf{C})\right) 
+= \text{Tr}\left( (\delta \mathbf{C})^\top (\mathbf{A} (d \mathbf{B}) + (d \mathbf{A}) \mathbf{B}) \right) 
+\\
+\\
+\text{while}\quad dy 
+= \text{Tr}\left( (\frac{\partial y}{\partial \mathbf{B}})^\top  (d \mathbf{B})\right)
+&amp;\quad \text{so we have}\quad
+\delta \mathbf{B} =  \mathbf{A}^\top \delta \mathbf{C}
+, \quad 
+\delta \mathbf{A} = \delta \mathbf{C} \mathbf{B}^\top
+\end{aligned}\]</div>
+<p><strong>Gradient of Hadamard product</strong></p>
+<div class="arithmatex">\[\begin{aligned}
+dy 
+= \text{Tr}\left( (\delta \mathbf{D})^\top  (d \mathbf{D})\right) 
+&amp;= \text{Tr}\left( (\delta \mathbf{C})^\top (\mathbf{A} \odot (d \mathbf{B}) + (d \mathbf{A}) \odot \mathbf{B}) \right) 
+\\
+\\
+&amp;= \text{Tr}\left( (\delta \mathbf{C} \odot \mathbf{A})^\top (d \mathbf{B}) + (\delta \mathbf{C} \odot \mathbf{B})^\top (d \mathbf{A})  \right) 
+\\
+\\
+\text{while}\quad dy 
+= \text{Tr}\left( (\delta \mathbf{B})^\top  (d \mathbf{B})\right)
+&amp;\quad \text{so we have}\quad
+\delta \mathbf{B} =  \delta \mathbf{C} \odot \mathbf{A} 
+, \quad 
+\delta \mathbf{A} = \delta \mathbf{C} \odot \mathbf{B}
+\end{aligned}\]</div>
+<h3 id="63-backward-pass-for-the-chunkwise-recurrent-form">6.3 Backward Pass for the Chunkwise Recurrent Form<a class="headerlink" href="#63-backward-pass-for-the-chunkwise-recurrent-form" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p><strong>Comment</strong>: Personally, I think it is actually easier to derive the backward pass directly from the chunkwise forward equations, rather than starting from the recurrent backward form and then transforming it.</p>
+</blockquote>
+<p>Recall the key forward equations:</p>
+<div class="arithmatex">\[\begin{aligned}
+\mathbf{O}_{[t]} &amp;= \overleftarrow{\boldsymbol{Q}_{[t]}}
+\mathbf{S}_{[t-1]}^{C \top} 
++
+\left( \overleftarrow{\mathbf{Q}_{[t]}} \left(\overrightarrow{\mathbf{K}_{[t]}} \right)^\top \odot \mathbf{M} \right) \mathbf{V}_{[t]}
+\\
+\\
+\mathbf{S}_{[t]}^{C}
+&amp;=
+\left(\mathbf{S}_{[t-1]}^{C} 
++ \mathbf{V}_{[t]}^\top \overrightarrow{\boldsymbol{K}_{[t]}} \right) \text{Diag}(\boldsymbol{\gamma}_{[t]}^{C}) 
+\end{aligned}\]</div>
+<p>Now we can derive the gradients term by term.</p>
+<p><strong>Gradient with respect to the chunk state <code>S_[t]</code></strong></p>
+<div class="arithmatex">\[\begin{aligned}
+\left.\delta \mathbf{S}_{[t-1]}^{C}\right|_{\text {from } \mathbf{O}_{[t]}}
+&amp;=
+\delta \mathbf{O}_{[t]}^{\top} \overleftarrow{\mathbf{Q}}_{[t]}
+,\quad
+\left.\delta \mathbf{S}_{[t-1]}^{C}\right|_{\text {from } \mathbf{S}_{[t]}^C}
+=
+\delta \mathbf{S}_{[t]}^C \text{Diag}(\boldsymbol{\gamma}_{[t]}^{C})  
+\\
+\\
+\Rightarrow
+\delta \mathbf{S}_{[t]}^{C} &amp;= \delta \mathbf{S}_{[t+1]}^C \text{Diag}(\boldsymbol{\gamma}_{[t+1]}^{C})   + \delta \mathbf{O}_{[t+1]}^{\top} \overleftarrow{\mathbf{Q}}_{[t+1]}
+\end{aligned}\]</div>
+<p><strong>Gradient with respect to <code>V_[t]</code></strong></p>
+<div class="arithmatex">\[\begin{aligned}
+\left.\delta \mathbf{V}_{[t]}\right|_{\text {from } \mathbf{O}_{[t]}}
+&amp;=
+ \left(\left(\overrightarrow{\mathbf{K}_{[t]}} \right) \overleftarrow{\mathbf{Q}_{[t]}}^\top \odot \mathbf{M}^\top \right) \delta \mathbf{O}_{[t]}
+\\
+\\
+\left.\delta \mathbf{V}_{[t]}\right|_{\text {from } \mathbf{S}_{[t]}^C}
+&amp;=
+\left(\overrightarrow{\mathbf{K}_{[t]}} \right) \text{Diag}(\boldsymbol{\gamma}_{[t]}^{C}) \delta \mathbf{S}_{[t]}^{C \top}
+\\
+\\
+\Rightarrow
+\delta \mathbf{V}_{[t]} 
+&amp;=  
+\left(\overrightarrow{\mathbf{K}_{[t]}} \right) \text{Diag}(\boldsymbol{\gamma}_{[t]}^{C}) \delta \mathbf{S}_{[t]}^{C \top}
++ 
+\left(\left(\overrightarrow{\mathbf{K}_{[t]}} \right) \overleftarrow{\mathbf{Q}_{[t]}}^\top \odot \mathbf{M}^\top \right) \delta \mathbf{O}_{[t]}
+\end{aligned}\]</div>
+<p><strong>Gradient with respect to transformed <code>K_[t]</code></strong></p>
+<div class="arithmatex">\[\begin{aligned}
+\left.\delta \overrightarrow{\mathbf{K}_{[t]}}\right|_{\text {from } \mathbf{O}_{[t]}}
+&amp;=
+\left( \mathbf{V}_{[t]} \left(\delta \mathbf{O}_{[t]} \right)^\top \odot \mathbf{M}^\top \right) \overleftarrow{\mathbf{Q}_{[t]}}
+\\
+\\
+\left.\delta\overrightarrow{\mathbf{K}_{[t]}}\right|_{\text {from } \mathbf{S}_{[t]}^C}
+&amp;=
+\mathbf{V}_{[t]} \delta \mathbf{S}_{[t]}^C \text{Diag}(\boldsymbol{\gamma}_{[t]}^{C})
+\\
+\\
+\Rightarrow
+\delta\overrightarrow{\mathbf{K}_{[t]}} 
+&amp;= 
+\mathbf{V}_{[t]} \delta \mathbf{S}_{[t]}^C \text{Diag}(\boldsymbol{\gamma}_{[t]}^{C})
++ 
+\left( \mathbf{V}_{[t]} \left(\delta \mathbf{O}_{[t]} \right)^\top \odot \mathbf{M}^\top \right) \overleftarrow{\mathbf{Q}_{[t]}}
+\end{aligned}\]</div>
+<p><strong>Gradient with respect to transformed <code>Q_[t]</code></strong></p>
+<div class="arithmatex">\[\begin{aligned}
+\delta \overleftarrow{\mathbf{Q}_{[t]}}
+=
+\left.\delta \overleftarrow{\mathbf{Q}_{[t]}}\right|_{\text {from } \mathbf{O}_{[t]}}
+=
+\delta \mathbf{O}_{[t]} \mathbf{S}_{[t-1]}^C 
++
+\left( \delta\mathbf{O}_{[t]}\mathbf{V}_{[t]}^\top \odot  \mathbf{M} \right) \overrightarrow{\mathbf{K}_{[t]}}
+\end{aligned}\]</div>
+<p><strong>Gradient with respect to original <code>K_[t]</code></strong></p>
+<div class="arithmatex">\[\begin{aligned}
+\delta \mathbf{K}_{[t]}
+=
+\delta \overrightarrow{\mathbf{K}_{[t]}} \oslash  \mathbf{\Gamma}_{[t]}
+\end{aligned}\]</div>
+<p><strong>Gradient with respect to original <code>Q_[t]</code></strong></p>
+<div class="arithmatex">\[\begin{aligned}
+\delta \mathbf{Q}_{[t]}
+=
+\delta \overleftarrow{\mathbf{Q}_{[t]}} \odot  \mathbf{\Gamma}_{[t]}
+\end{aligned}\]</div>
+<p><strong>Gradient with respect to <code>Gamma_[t]</code></strong></p>
+<div class="arithmatex">\[\begin{aligned}
+\left.\delta \mathbf{\Gamma}_{[t]}\right|_{\text {from } \mathbf{S}_{[t]}^C}
+&amp;=
+\left[0,0,..., \text{diag}\left(\left(\mathbf{S}_{[t-1]}^{C \top} 
++ \overrightarrow{\boldsymbol{K}_{[t]}}^\top \mathbf{V}_{[t]}  \right)  \delta \mathbf{S}_{[t]}^{C}\right) \right]^\top
+\\
+\\
+\delta \mathbf{\Gamma}_{[t]}
+&amp;=
+\delta \overleftarrow{\mathbf{Q}_{[t]}} \odot \mathbf{Q}_{[t]}
+-
+\delta \overrightarrow{\mathbf{K}_{[t]}} \odot  \mathbf{K}_{[t]} \oslash (\mathbf{\Gamma}_{[t]} \odot \mathbf{\Gamma}_{[t]})   
++ 
+\left.\delta \mathbf{\Gamma}_{[t]}\right|_{\text {from } \mathbf{S}_{[t]}^C}
+\end{aligned}\]</div>
+<p>An equivalent form is:</p>
+<div class="arithmatex">\[\begin{aligned}
+\delta \mathbf{\Gamma}_{[t]} \odot \mathbf{\Gamma}_{[t]}
+&amp;=
+\delta \mathbf{Q}_{[t]} \odot \mathbf{Q}_{[t]}
+-
+\delta \mathbf{K}_{[t]} \odot  \mathbf{K}_{[t]} 
++ 
+\left.\delta \mathbf{\Gamma}_{[t]}\right|_{\text {from } \mathbf{S}_{[t]}^C} \odot \mathbf{\Gamma}_{[t]} 
+\\
+\\
+\left.\delta \mathbf{\Gamma}_{[t]}^C\right|_{\text {from } \mathbf{S}_{[t]}^C} \odot \boldsymbol{\gamma}_{[t]}^C 
+&amp;=
+\text{diag}\left(\mathbf{S}_{[t-1]}^{C \top} \delta \mathbf{S}_{[t]}^{C}\right) \odot \mathbf{\gamma}_{[t]}^C 
++\text{diag}\left(\overrightarrow{\boldsymbol{K}_{[t]}}^\top \mathbf{V}_{[t]}   \delta \mathbf{S}_{[t]}^{C}  \text{Diag}(\boldsymbol{\gamma}_{[t]}^{C}) \right)
+\\ &amp;=
+\text{diag}\left(\mathbf{S}_{[t-1]}^{C \top} \delta \mathbf{S}_{[t]}^{C}\right) \odot \mathbf{\gamma}_{[t]}^C 
++\text{diag}\left(\overrightarrow{\boldsymbol{K}_{[t]}}^\top \left.\delta\overrightarrow{\mathbf{K}_{[t]}}\right|_{\text {from } \mathbf{S}_{[t]}^C}\right)
+\\ &amp;=
+\text{diag}\left(\mathbf{S}_{[t-1]}^{C \top} \delta \mathbf{S}_{[t]}^{C}\right) \odot \mathbf{\gamma}_{[t]}^C 
++\text{diag}\left(\boldsymbol{K}_{[t]}^\top \left.\delta \mathbf{K}_{[t]}\right|_{\text {from } \mathbf{S}_{[t]}^C}\right)
+\end{aligned}\]</div>
+<p><strong>Gradient with respect to <code>alpha_[t]</code></strong></p>
+<div class="arithmatex">\[\begin{aligned}
+\mathbf{\Gamma}_{[t]} &amp;= [ \prod_{i=tC+1}^{tC+1} \boldsymbol{\alpha}_i, \prod_{i=tC+1}^{tC+2} \boldsymbol{\alpha}_i,...\prod_{i=tC+1}^{tC+C} \boldsymbol{\alpha}_i]^\top \in \mathbb{R}^{C \times d}
+\\
+\\
+\delta \boldsymbol{\alpha}_r 
+&amp;= 
+\sum_{j \ge r} \delta \mathbf{\Gamma}_{j,:} \odot (\prod_{i=tC+1}^{tC+j} \boldsymbol{\alpha}_i \oslash \boldsymbol{\alpha}_r)
+=
+\left(\sum_{j \ge r} \delta \mathbf{\Gamma}_{j,:} \odot \mathbf{\Gamma}_{j,:} \right) \oslash \boldsymbol{\alpha}_r
+\\
+\\
+\delta \mathbf{A}_{[t]} 
+&amp;= [\delta \boldsymbol{\alpha}_{[t]}^1, \delta \boldsymbol{\alpha}_{[t]}^2,...\delta \boldsymbol{\alpha}_{[t]}^C]^\top 
+=
+\text{suffix\_sum}_{row}(\delta \mathbf{\Gamma} \odot \mathbf{\Gamma}) \oslash \mathbf{A}_{[t]} 
+\end{aligned}\]</div>
+<p>And in the log domain:</p>
+<div class="arithmatex">\[\begin{aligned}
+\log \mathbf{\Gamma}_{[t]} &amp;= [ \sum_{i=tC+1}^{tC+1} \log \boldsymbol{\alpha}_i, \sum_{i=tC+1}^{tC+2} \log \boldsymbol{\alpha}_i,...\sum_{i=tC+1}^{tC+C} \log \boldsymbol{\alpha}_i]^\top \in \mathbb{R}^{C \times d}
+\\
+\\
+\Rightarrow
+\delta \log \boldsymbol{\alpha}_r 
+&amp;= 
+\sum_{j \ge r} \delta \log \mathbf{\Gamma}_{j,:} 
+\end{aligned}\]</div>
+<h2 id="7-network-architecture">7. Network Architecture<a class="headerlink" href="#7-network-architecture" title="Permanent link">&para;</a></h2>
+<h3 id="71-token-mixing">7.1 Token Mixing<a class="headerlink" href="#71-token-mixing" title="Permanent link">&para;</a></h3>
+<p>The token-mixing part of GLA can be written as:</p>
+<div class="arithmatex">\[\begin{aligned} 
+\boldsymbol{\alpha}_{t} = \sigma\left(\left(\mathbf{W}_{\alpha}^{1} \mathbf{W}_{\alpha}^{2} \boldsymbol{x}_{t} + \boldsymbol{b}_{\alpha}\right)\right)^{\frac{1}{\tau}} &amp;\in \mathbb{R}^{d_{k} \times 1}
+\\
+\\
+\mathbf{S}_{t}^{h} = \mathbf{S}_{t-1}^{h} 
+\text{Diag}(\boldsymbol{\alpha}_{t}^{h})
++ \boldsymbol{v}_{t}^{h}\boldsymbol{k}_{t}^{h \top}  &amp;\in \mathbb{R}^{d_{v}^{\prime} \times d_{k}^{\prime}}
+\\
+\\
+\boldsymbol{o}_{t}^{h} = \mathbf{S}_{t}^{h} \boldsymbol{q}_{t}^{h}  &amp;\in \mathbb{R}^{d_{v}^{\prime} \times 1} 
+\\
+\\
+\boldsymbol{o}_{t}^{\prime} = \operatorname{concat}\left(\operatorname{LN}\left(\boldsymbol{o}_{t}^{1}\right), \dots, \operatorname{LN}\left(\boldsymbol{o}_{t}^{H}\right)\right) &amp;\in \mathbb{R}^{d_{v} \times 1}
+\\
+\\
+\boldsymbol{r}_{t} = \operatorname{Swish}\left(\mathbf{W}_{r} \boldsymbol{x}_{t} + \boldsymbol{b}_{r}\right) &amp;\in \mathbb{R}^{d_{v} \times 1}
+\\
+\\
+\boldsymbol{y}_{t} = \mathbf{W}_{O} \left(\boldsymbol{r}_{t} \odot \boldsymbol{o}_{t}^{\prime}\right)  &amp;\in \mathbb{R}^{d \times 1}
+\end{aligned}\]</div>
+<p>The parameter settings are:</p>
+<div class="arithmatex">\[\begin{aligned} 
+\mathbf{W}_{\alpha}^{1} \in \mathbb{R}^{d \times 16}
+,\quad 
+\mathbf{W}_{\alpha}^{2} \in \mathbb{R}^{16 \times d_{k}}
+, \quad
+\tau = 16
+, \quad
+d_{k} = \frac{d}{2}
+, \quad
+d_{v} = d
+\\
+\\
+(\mathbf{W}_{Q}, \mathbf{W}_{K}, \mathbf{W}_{V}, \mathbf{W}_{O}, \mathbf{W}_{r})
+\in \text{Full Rank}
+\end{aligned}\]</div>
+<h3 id="72-channel-mixing">7.2 Channel Mixing<a class="headerlink" href="#72-channel-mixing" title="Permanent link">&para;</a></h3>
+<p>The channel-mixing block uses SwiGLU:</p>
+<div class="arithmatex">\[\begin{aligned} 
+\operatorname{SwiGLU}(\mathbf{Z}) = \left(\operatorname{Swish}(\mathbf{Z} \mathbf{W}_1) \odot \mathbf{Z} \mathbf{W}_2\right) \mathbf{W}_3
+\end{aligned}\]</div>
+<h3 id="73-a-single-layer">7.3 A Single Layer<a class="headerlink" href="#73-a-single-layer" title="Permanent link">&para;</a></h3>
+<p>A single layer is structured as follows:</p>
+<div class="arithmatex">\[\begin{aligned} 
+\mathbf{Y}^{(l)} &amp;= \operatorname{GLA}\left(\operatorname{LN}\left(\mathbf{X}^{(l)}\right)\right) + \mathbf{X}^{(l)} 
+\\
+\\
+\mathbf{X}^{(l+1)} &amp;= \operatorname{SwiGLU}\left(\operatorname{LN}\left(\mathbf{Y}^{(l)}\right)\right) + \mathbf{X}^{(l)}
+\end{aligned}\]</div>
+<p>Overall, one GLA layer uses roughly <code>4d^2</code> parameters, which is on par with a standard attention layer.</p>
+<h2 id="8-experiments">8. Experiments<a class="headerlink" href="#8-experiments" title="Permanent link">&para;</a></h2>
+<h3 id="81-data-and-tokenization">8.1 Data and Tokenization<a class="headerlink" href="#81-data-and-tokenization" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Dataset</strong>: SlimPajama</li>
+<li><strong>Tokenizer</strong>: Mistral tokenizer</li>
+<li>A <strong>100B-token subset</strong> is used</li>
+</ul>
+<h3 id="82-baselines">8.2 Baselines<a class="headerlink" href="#82-baselines" title="Permanent link">&para;</a></h3>
+<p>The main baselines are:</p>
+<ul>
+<li><strong>Transformer++</strong>: essentially a LLaMA-style variant with RoPE, SwiGLU, and RMSNorm</li>
+<li><strong>RetNet</strong>: with its FFN replaced by SwiGLU</li>
+</ul>
+<h3 id="83-training-setup">8.3 Training Setup<a class="headerlink" href="#83-training-setup" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Model sizes: <strong>340M</strong> and <strong>1.3B</strong></li>
+<li>Optimizer: <strong>AdamW</strong></li>
+</ul>
+<p>For the <strong>340M</strong> model:</p>
+<ul>
+<li>trained on <strong>15B tokens</strong></li>
+<li>batch size = <strong>0.5M tokens</strong></li>
+<li>warmup = <strong>0.5B tokens</strong></li>
+</ul>
+<p>For the <strong>1.3B</strong> model:</p>
+<ul>
+<li>trained on <strong>100B tokens</strong></li>
+<li>batch size = <strong>2M tokens</strong></li>
+<li>warmup = <strong>1B tokens</strong></li>
+</ul>
+<p>Other settings:</p>
+<ul>
+<li>learning rate = <strong>3e-5</strong></li>
+<li>weight decay = <strong>0.01</strong></li>
+<li>gradient clipping = <strong>1.0</strong></li>
+</ul>
+<h3 id="84-evaluation">8.4 Evaluation<a class="headerlink" href="#84-evaluation" title="Permanent link">&para;</a></h3>
+<p>The paper uses <code>lm-eval</code> for evaluation.</p>
+<p><img alt="" src="../assets/Pasted%20image%2020260324184450.png" /></p>
+<h3 id="85-recall-tasks">8.5 Recall Tasks<a class="headerlink" href="#85-recall-tasks" title="Permanent link">&para;</a></h3>
+<p>Recall-heavy tasks are usually considered one of the harder settings for linear attention, since the model needs to retrieve exact information seen much earlier in the sequence.</p>
+<p><img alt="320" src="../assets/Pasted%20image%2020260324184502.png" /> </p>
+<p><img alt="320" src="../assets/Pasted%20image%2020260324184508.png" /></p>
+<h3 id="86-long-context-training">8.6 Long-Context Training<a class="headerlink" href="#86-long-context-training" title="Permanent link">&para;</a></h3>
+<p>The paper studies two training strategies:</p>
+<ul>
+<li><strong>Mode A</strong>: train directly with sequence length <strong>8K</strong></li>
+<li><strong>Mode B</strong>: split the sequence into <strong>12 segments</strong>, each of length <strong>2K</strong>, for an effective training length of <strong>24K</strong>. Gradients are not propagated across segment boundaries.</li>
+</ul>
+<p>At evaluation time, perplexity is computed segment by segment:</p>
+<p><img alt="" src="../assets/Pasted%20image%2020260324184652.png" /></p>
+<h3 id="87-ablation-study">8.7 Ablation Study<a class="headerlink" href="#87-ablation-study" title="Permanent link">&para;</a></h3>
+<p><img alt="320" src="../assets/Pasted%20image%2020260324184702.png" /> </p>
+<p><img alt="320" src="../assets/Pasted%20image%2020260324184707.png" /></p>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+<style>
+  .md-comments {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--md-default-fg-color--lightest);
+  }
+
+  .md-comments__heading {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1.5rem;
+    color: var(--md-default-fg-color--light);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .md-comments__heading-bar {
+    display: inline-block;
+    width: 3px;
+    height: 1em;
+    background-color: var(--md-primary-fg-color);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .md-comments__heading-line {
+    flex: 1;
+    height: 1px;
+    background: var(--md-default-fg-color--lightest);
+  }
+
+  .md-comments__body {
+    padding: 1.5rem;
+  }
+</style>
+
+<div class="md-comments">
+  <div class="md-comments__heading">
+    <span class="md-comments__heading-bar"></span>
+    <span>Comments</span>
+    <span class="md-comments__heading-line"></span>
+  </div>
+
+  <div class="md-comments__body">
+  <script src="https://giscus.app/client.js"
+          data-repo="mzeromiko/blogs"
+          data-repo-id="R_kgDOR12rgw"
+          data-category="Announcements"
+          data-category-id="DIC_kwDOR12rg84C5s_Q"
+          data-mapping="pathname"
+          data-strict="0"
+          data-reactions-enabled="1"
+          data-emit-metadata="0"
+          data-input-position="bottom"
+          data-theme="preferred_color_scheme"
+          data-lang="en"
+          crossorigin="anonymous"
+          async>
+  </script>
+  </div>
+</div>
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.toc", "navigation.sections", "navigation.expand", "navigation.top", "navigation.indexes", "toc.follow", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
