@@ -514,7 +514,7 @@ $$\begin{aligned}
 \left.\delta \mathbf{\Gamma}_{[t]}\right|_{\text {from } \mathbf{S}_{[t]}^C} \odot \mathbf{\Gamma}_{[t]} 
 \\
 \\
-\left.\delta \mathbf{\Gamma}_{[t]}^C\right|_{\text {from } \mathbf{S}_{[t]}^C} \odot \mathbf{\gamma}_{[t]}^C 
+\left.\delta \mathbf{\Gamma}_{[t]}^C\right|_{\text {from } \mathbf{S}_{[t]}^C} \odot \boldsymbol{\gamma}_{[t]}^C 
 &=
 \text{diag}\left(\mathbf{S}_{[t-1]}^{C \top} \delta \mathbf{S}_{[t]}^{C}\right) \odot \mathbf{\gamma}_{[t]}^C 
 +\text{diag}\left(\overrightarrow{\boldsymbol{K}_{[t]}}^\top \mathbf{V}_{[t]}   \delta \mathbf{S}_{[t]}^{C}  \text{Diag}(\boldsymbol{\gamma}_{[t]}^{C}) \right)
@@ -569,7 +569,9 @@ $$\begin{aligned}
 \boldsymbol{\alpha}_{t} = \sigma\left(\left(\mathbf{W}_{\alpha}^{1} \mathbf{W}_{\alpha}^{2} \boldsymbol{x}_{t} + \boldsymbol{b}_{\alpha}\right)\right)^{\frac{1}{\tau}} &\in \mathbb{R}^{d_{k} \times 1}
 \\
 \\
-\mathbf{S}_{t}^{h} = \left( \boldsymbol{\alpha}_{t}^{h}\mathbf{1} \right) \odot \mathbf{S}_{t-1}^{h} + \boldsymbol{v}_{t}^{h}\boldsymbol{k}_{t}^{h \top}  &\in \mathbb{R}^{d_{v}^{\prime} \times d_{k}^{\prime}}
+\mathbf{S}_{t}^{h} = \mathbf{S}_{t-1}^{h} 
+\text{Diag}(\boldsymbol{\alpha}_{t}^{h})
++ \boldsymbol{v}_{t}^{h}\boldsymbol{k}_{t}^{h \top}  &\in \mathbb{R}^{d_{v}^{\prime} \times d_{k}^{\prime}}
 \\
 \\
 \boldsymbol{o}_{t}^{h} = \mathbf{S}_{t}^{h} \boldsymbol{q}_{t}^{h}  &\in \mathbb{R}^{d_{v}^{\prime} \times 1} 

@@ -193,7 +193,7 @@ $$\begin{aligned}
 On the other hand, suppose that:
 
 $$\begin{aligned}
-\mathbf{S}_t = \eta_t \sum_{i=1}^{t} \boldsymbol{u^0}_i \boldsymbol{k}_i^\top
+\mathbf{S}_t = \eta_t \sum_{i=1}^{t} \boldsymbol{u^0}_i \boldsymbol{k}_i^\top 
 \end{aligned}$$
 
 Then, by induction, we obtain:
@@ -319,30 +319,29 @@ $$\begin{aligned}
 \mathbf{W}_{[t]} 
 = 
 \left(\mathbf{I} + \text{Diag}(\boldsymbol{\beta}_{[t]}) \left( \mathbf{K}_{[t]} \mathbf{K}_{[t]}^\top \odot \mathbf{M}_{-1}  \right) \right)^{-1} \text{Diag}(\boldsymbol{\beta}_{[t]}) \mathbf{K}_{[t]} 
+\\
+\\
+\Rightarrow
+\overleftarrow{\mathbf{W}_{[t]}} 
+= 
+\left(\mathbf{I} + \text{Diag}(\boldsymbol{\beta}_{[t]}) \left( \overleftarrow{\mathbf{K}_{[t]}} \overrightarrow{\mathbf{K}_{[t]}}^\top \odot \mathbf{M}_{-1}  \right) \right)^{-1} 
+\text{Diag}(\boldsymbol{\beta}_{[t]}) \overleftarrow{\mathbf{K}_{[t]}} 
 \end{aligned}$$
 
 Therefore, in order to compute `U_[t]` and `W_[t]`, the key quantities are:
 
 $$\begin{aligned}
-\mathbf{T}_{[t]} 
+\widetilde{\mathbf{A}}_{[t]} 
 = 
-\left(\mathbf{I} + \text{Diag}(\boldsymbol{\beta}_{[t]}) \left( \mathbf{K}_{[t]} \mathbf{K}_{[t]}^\top \odot \mathbf{M}_{-1}  \right) \right)^{-1} \text{Diag}(\boldsymbol{\beta}_{[t]})
-\end{aligned}$$
-
-and
-
-$$\begin{aligned}
-\mathbf{\widetilde{T}}_{[t]} 
-= 
-\left(\mathbf{I} + \text{Diag}(\boldsymbol{\beta}_{[t]}) \left( \overleftarrow{\mathbf{K}_{[t]}} \overrightarrow{\mathbf{K}_{[t]}}^\top \odot \mathbf{M}_{-1}  \right) \right)^{-1} \text{Diag}(\boldsymbol{\beta}_{[t]})
+\left(\mathbf{I} + \text{Diag}(\boldsymbol{\beta}_{[t]}) \left( \overleftarrow{\mathbf{K}_{[t]}} \overrightarrow{\mathbf{K}_{[t]}}^\top \odot \mathbf{M}_{-1}  \right) \right)^{-1}
 \end{aligned}$$
 
 Note that this expression is equivalent to the one in the original paper:
 
 $$\begin{aligned}
-\mathbf{\widetilde{T}}_{[t]} 
+\mathbf{\widetilde{A}}_{[t]} 
 = 
-\left(\mathbf{I} + \text{Diag}(\boldsymbol{\beta}_{[t]}) \left( \mathbf{K}_{[t]} \mathbf{K}_{[t]}^\top  \odot \mathbf{\Gamma}_{[t]}  \right)  \odot \mathbf{M}_{-1}  \right)^{-1} \text{Diag}(\boldsymbol{\beta}_{[t]})
+\left(\mathbf{I} + \text{Diag}(\boldsymbol{\beta}_{[t]}) \left( \mathbf{K}_{[t]} \mathbf{K}_{[t]}^\top  \odot \mathbf{\Gamma}_{[t]}  \right)  \odot \mathbf{M}_{-1}  \right)^{-1}
 ,\quad
 (\mathbf{\Gamma}_{[t]})_{ij} = \frac{\gamma_i}{\gamma_j}
 \end{aligned}$$

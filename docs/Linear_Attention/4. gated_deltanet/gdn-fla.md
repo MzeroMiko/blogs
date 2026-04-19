@@ -152,7 +152,7 @@ def chunk_gated_delta_rule_bwd(
     return dq, dk, dv, db, dg, dh0
 ```
 
-### Step 1: Reuse the stored inverse
+### Step 1:  Recompute U and the left-scaled W
 
 `A_[t] = (I + A0_[t])^{-1}` has already been stored. Everything else is the same as in the forward pass.
 
