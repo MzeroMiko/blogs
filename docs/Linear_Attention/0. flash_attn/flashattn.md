@@ -11,8 +11,10 @@
 ### Forward Pass
 $$\begin{aligned}
 \mathbf{O} &= 
-\text{Diag}\left( \exp(\mathbf{Q}\mathbf{K}^\top  \odot \mathbf{M}) \boldsymbol{1}\right)^{-1}
-\exp(\mathbf{Q}\mathbf{K}^\top \odot \mathbf{M}) \mathbf{V}
+\text{Diag}\left( 
+\left(\exp(\mathbf{Q}\mathbf{K}^\top  ) \odot \mathbf{M}\right)\boldsymbol{1}\right)^{-1}
+\left(
+\exp(\mathbf{Q}\mathbf{K}^\top)  \odot \mathbf{M}\right)\mathbf{V}
 \end{aligned}$$
 
 ![](assets/Pasted%20image%2020260506141503.png)
@@ -42,25 +44,26 @@ Then the standard attention backward can be derived as follow:
 
 $$\begin{aligned}
 \mathbf{O} &= 
-\text{Diag}\left( \exp(\mathbf{Q}\mathbf{K}^\top  \odot \mathbf{M}) \boldsymbol{1}\right)^{-1}
-\exp(\mathbf{Q}\mathbf{K}^\top \odot \mathbf{M}) 
-\mathbf{V}
+\text{Diag}\left( 
+\left(\exp(\mathbf{Q}\mathbf{K}^\top  ) \odot \mathbf{M}\right)\boldsymbol{1}\right)^{-1}
+\left(
+\exp(\mathbf{Q}\mathbf{K}^\top)  \odot \mathbf{M}\right)\mathbf{V}
 \\ 
 \\ 
 \Rightarrow
-\delta \exp(\mathbf{Q}\mathbf{K}^\top  \odot \mathbf{M})
+\delta \left(\exp(\mathbf{Q}\mathbf{K}^\top) \odot \mathbf{M}\right)
 &=
-\text{Diag}\left( \exp(\mathbf{Q}\mathbf{K}^\top  \odot \mathbf{M}) \boldsymbol{1}\right)^{-1} 
+\text{Diag}\left(\left(\exp(\mathbf{Q}\mathbf{K}^\top  ) \odot \mathbf{M}\right) \boldsymbol{1}\right)^{-1} 
 \delta \mathbf{O}
 \mathbf{V}^\top
 \\ &-
-\text{Diag}\left( \exp(\mathbf{Q}\mathbf{K}^\top  \odot \mathbf{M}) \boldsymbol{1}\right)^{-2} 
+\text{Diag}\left(\left(\exp(\mathbf{Q}\mathbf{K}^\top  ) \odot \mathbf{M}\right) \boldsymbol{1}\right)^{-2} 
 \text{diag}\left(
 \delta \mathbf{O}  \mathbf{V}^\top
-\exp(\mathbf{Q}\mathbf{K}^\top  \odot \mathbf{M})^\top\right) 
+\left(\exp(\mathbf{Q}\mathbf{K}^\top  ) \odot \mathbf{M}\right)^\top\right) 
 \boldsymbol{1}^\top
 \\ &=
-\text{Diag}\left( \exp(\mathbf{Q}\mathbf{K}^\top  \odot \mathbf{M}) \boldsymbol{1}\right)^{-1} 
+\text{Diag}\left(\left(\exp(\mathbf{Q}\mathbf{K}^\top  ) \odot \mathbf{M}\right) \boldsymbol{1}\right)^{-1} 
 \left(
 \delta \mathbf{O} \mathbf{V}^\top
 -
@@ -70,21 +73,19 @@ $$\begin{aligned}
 \right)
 \\ \\ \Rightarrow
 \delta \mathbf{V} &= 
-\exp(\mathbf{Q}\mathbf{K}^\top  \odot \mathbf{M})^\top
-\text{Diag}\left( \exp(\mathbf{Q}\mathbf{K}^\top  \odot \mathbf{M}) \boldsymbol{1} \right)^{-1}
+\left(\exp(\mathbf{Q}\mathbf{K}^\top  ) \odot \mathbf{M}\right)^\top
+\text{Diag}\left(\left(\exp(\mathbf{Q}\mathbf{K}^\top  ) \odot \mathbf{M}\right) \boldsymbol{1} \right)^{-1}
 \delta \mathbf{O}
 \\ \\
 \delta \mathbf{Q} &= \left(
-\left( \delta \exp(\mathbf{Q}\mathbf{K}^\top  \odot \mathbf{M}) \right) 
-\odot \exp(\mathbf{Q}\mathbf{K}^\top  \odot \mathbf{M})
-\odot \mathbf{M}
+\delta \left(\exp(\mathbf{Q}\mathbf{K}^\top) \odot \mathbf{M}\right)
+\odot \left(\exp(\mathbf{Q}\mathbf{K}^\top) \odot \mathbf{M}\right)
 \right) \mathbf{K}
 \\ \\
 \delta \mathbf{K} &=  \left(
-\left( \delta \exp(\mathbf{Q}\mathbf{K}^\top  \odot \mathbf{M}) \right) 
-\odot \exp(\mathbf{Q}\mathbf{K}^\top  \odot \mathbf{M})
-\odot \mathbf{M}
-\right) ^\top \mathbf{Q}
+\delta \left(\exp(\mathbf{Q}\mathbf{K}^\top) \odot \mathbf{M}\right)
+\odot \left(\exp(\mathbf{Q}\mathbf{K}^\top) \odot \mathbf{M}\right)
+\right)^\top \mathbf{Q}
 \end{aligned}$$
 
 ![](assets/Pasted%20image%2020260507175224.png)
@@ -118,7 +119,7 @@ $$\begin{aligned}
 ,\quad
 l^j_t =  \sum_{i=1}^t \exp(\boldsymbol{k}_i^\top\boldsymbol{q}_j)
 ,\quad
-\boldsymbol{a}^t_L = l^j_t \boldsymbol{o}_t
+\boldsymbol{a}^t_L = l^t_L \boldsymbol{o}_t
 \end{aligned}$$
 
 Then we have
@@ -138,31 +139,33 @@ l^j_t &= l^j_{t-1} + \exp(\boldsymbol{k}_t^\top\boldsymbol{q}_j)
 We set $\mathbf{M}$ as the causal mask or no mask below.
 
 $$\begin{aligned}
-\mathbf{O}_{[t]} &= \text{Diag}\left(\boldsymbol{l}^j_{t}\right)^{-1} \mathbf{A}^{[t]}_{[L]} 
+\mathbf{O}_{[t]} &= \text{Diag}\left(\boldsymbol{ll}^{[t]}_{[L]}\right)^{-1} \mathbf{A}^{[t]}_{[L]} 
 \\ \\
-\boldsymbol{ll}^j_{[t]} &= \boldsymbol{ll}^j_{[t-1]} 
+\boldsymbol{ll}^{[j]}_{[t]} &= \boldsymbol{ll}^{[j]}_{[t-1]} 
 + 
-\exp \left(\mathbf{Q}_{[j]}\mathbf{K}_{[t]}^\top  \odot \mathbf{M}\right)  \boldsymbol{1}
+\left(\exp \left(\mathbf{Q}_{[j]}\mathbf{K}_{[t]}^\top\right)  \odot \mathbf{M}\right)  \boldsymbol{1}
 \\ \\
 \mathbf{A}^{[j]}_{[t]} &= 
 \mathbf{A}^{[j]}_{[t-1]}
 +
-\exp \left(\mathbf{Q}_{[j]}\mathbf{K}_{[t]}^\top  \odot \mathbf{M}\right) \mathbf{V}_{[t]}
+\left(\exp \left(\mathbf{Q}_{[j]}\mathbf{K}_{[t]}^\top\right)  \odot \mathbf{M}\right) \mathbf{V}_{[t]}
 \end{aligned}$$
 
 After we set
 
 $$\begin{aligned}
-\mathbf{S}_{[t],[\tau]} &= \mathbf{Q}_{[t]}\mathbf{K}_{[\tau]}^\top  \odot \mathbf{M}
+\mathbf{S}_{[t],[\tau]} &= \mathbf{Q}_{[t]}\mathbf{K}_{[\tau]}^\top 
 \in \mathbb{R}^{N \times M}
 ,\quad
 \boldsymbol{m}_{[t],\tau} 
 \in \mathbb{R}^{N}
 \\ \\
-\mathbf{P}_{[t],[\tau]} &= \exp(\mathbf{S}_{[t],[\tau]} - \log\boldsymbol{m}_{[t],\tau} \boldsymbol{1}^\top)
-=
+\mathbf{P}_{[t],[\tau]} &=
 \text{Diag}\left(\boldsymbol{m}_{[t],\tau}\right)^{-1}
-\exp \left(\mathbf{S}_{[t],[\tau]}\right)
+\left( 
+\exp \left(\mathbf{S}_{[t],[\tau]}\right) 
+\odot \mathbf{M}
+\right)
 \in \mathbb{R}^{N \times M}
 \\ \\
 \boldsymbol{l}_{[t],[\tau]} &=  \mathbf{P}_{[t],[\tau]} \boldsymbol{1}
@@ -172,17 +175,17 @@ $$\begin{aligned}
 we have
 
 $$\begin{aligned}
-\boldsymbol{l}^t_{[\tau]} &= 
-\boldsymbol{ll}^t_{[\tau]} \oslash \boldsymbol{m}^{\tau}_{[t]}
+\boldsymbol{l}^{[t]}_{[\tau]} &= 
+\boldsymbol{ll}^{[t]}_{[\tau]} \oslash \boldsymbol{m}^{\tau}_{[t]}
 =
 \text{Diag}\left(\boldsymbol{m}^{\tau-1}_{[t]}\right)
 \text{Diag}\left(\boldsymbol{m}^\tau_{[t]}\right)^{-1}
-\boldsymbol{l}^t_{[\tau-1]}
+\boldsymbol{l}^{[t]}_{[\tau-1]}
 + \text{Diag}\left(\boldsymbol{m}_{[t],\tau}\right)
 \text{Diag}\left(\boldsymbol{m}^\tau_{[t]}\right)^{-1}
 \boldsymbol{l}_{[t],[\tau]}
 \\ \\
-\mathbf{A}^{[t]}_{[\tau]} &= \mathbf{A}^{[t]}_{[\tau]} 
+\mathbf{A}^{[t]}_{[\tau]} &= \mathbf{A}^{[t]}_{[\tau-1]} 
 + \text{Diag}\left(\boldsymbol{m}_{[t],\tau}\right)
 \mathbf{P}_{[t],[\tau]}\mathbf{V}_{[\tau]}
 \end{aligned}$$
@@ -190,17 +193,17 @@ $$\begin{aligned}
 
 ## Chunk-wise Mode with Online Softmax Re-scale
 
-For numerical stability, we often consider the rescaling trick for softmax. We set the scale as the row-max of past $\mathbf{QK}^\top$. So we define:
+For numerical stability, we often consider the rescaling trick for softmax. We set the scale as the exponential of row-max of past $\mathbf{QK}^\top$. So we define:
 
 $$\begin{aligned}
 \boldsymbol{m}^{\tau}_{[t]} &= 
 \max(\boldsymbol{m}^{\tau-1}_{[t]}, \boldsymbol{m}_{[t],\tau})
 \\
 \\
-\boldsymbol{l}^t_{[\tau]} &=
+\boldsymbol{l}^{[t]}_{[\tau]} &=
 \text{Diag}\left(\boldsymbol{m}^{\tau-1}_{[t]}\right)
 \text{Diag}\left(\boldsymbol{m}^\tau_{[t]}\right)^{-1}
-\boldsymbol{l}^t_{[\tau-1]}
+\boldsymbol{l}^{[t]}_{[\tau-1]}
 + \text{Diag}\left(\boldsymbol{m}_{[t],\tau}\right)
 \text{Diag}\left(\boldsymbol{m}^\tau_{[t]}\right)^{-1}
 \boldsymbol{l}_{[t],[\tau]}
@@ -220,7 +223,7 @@ $$\begin{aligned}
 \\
 \\
 \mathbf{O}^{[t]} &= 
-\text{Diag}\left(\boldsymbol{l}^t_{L}\right)^{-1}
+\text{Diag}\left(\boldsymbol{l}^{[t]}_{L}\right)^{-1}
 \mathbf{C}^{[t]}_{[L]} 
 \end{aligned}$$
 
@@ -233,21 +236,23 @@ Now, with the addition of the inner-outer loop exchange and the position where t
 
 ## Flash Attention Backward Pass
 
-> **comment**: The row-max $\boldsymbol{m}$ is computed from the input, but can be treated as a constant for gradient purposes. However, $\boldsymbol{l}$ is a smooth function of the input, so gradient does flow through it.
+> **comment**: The exponential of row-max $\boldsymbol{m}$ is computed from the input, but can be treated as a constant for gradient purposes. However, $\boldsymbol{l}$ is a smooth function of the input, so gradient does flow through it.
 
 ### Revisiting the Forward Pass
 
 $$\begin{aligned}
 \mathbf{P}_{[t],[\tau]} &= 
 \text{Diag}\left(\boldsymbol{m}_{[t],\tau}\right)^{-1}
-\exp \left(\mathbf{Q}_{[t]}\mathbf{K}_{[\tau]}^\top \odot \mathbf{M} \right)
+\left( 
+\exp \left(\mathbf{Q}_{[t]}\mathbf{K}_{[\tau]}^\top \right)\odot \mathbf{M} 
+\right)
 \in \mathbb{R}^{N \times M}
 \\
 \\
-\boldsymbol{l}^t_{[\tau]} &= 
+\boldsymbol{l}^{[t]}_{[\tau]} &= 
 \text{Diag}\left(\boldsymbol{m}^{\tau-1}_{[t]}\right)
 \text{Diag}\left(\boldsymbol{m}^\tau_{[t]}\right)^{-1}
-\boldsymbol{l}^t_{[\tau-1]}
+\boldsymbol{l}^{[t]}_{[\tau-1]}
 + \text{Diag}\left(\boldsymbol{m}_{[t],\tau}\right)
 \text{Diag}\left(\boldsymbol{m}^\tau_{[t]}\right)^{-1}
 \mathbf{P}_{[t],[\tau]} \boldsymbol{1}
@@ -264,7 +269,7 @@ $$\begin{aligned}
 \\
 \\
 \mathbf{O}^{[t]} &= 
-\text{Diag}\left(\boldsymbol{l}^t_{L}\right)^{-1}
+\text{Diag}\left(\boldsymbol{l}^{[t]}_{L}\right)^{-1}
 \mathbf{C}^{[t]}_{[L]} 
 \end{aligned}$$
 
@@ -274,28 +279,28 @@ Assuming we have stored $\boldsymbol{l}$ and $\boldsymbol{m}$ from the forward p
 
 $$\begin{aligned}
 \delta \mathbf{C}^{[t]}_{[L]} &=  
-\text{Diag}\left(\boldsymbol{l}^t_{L}\right)^{-1}
+\text{Diag}\left(\boldsymbol{l}^{[t]}_{[L]}\right)^{-1}
 \delta \mathbf{O}^{[t]}
 \\
 \\
 \delta \boldsymbol{l}^{[t]}_{[L]} &= -
 \text{diag}\left(
-\text{Diag}\left(\boldsymbol{l}^t_{L}\right)^{-\top}
+\text{Diag}\left(\boldsymbol{l}^{[t]}_{[L]}\right)^{-\top}
 \left(\delta \mathbf{O}^{[t]} (\mathbf{C}^{[t]}_{[L]})^\top \right) 
-\text{Diag}\left(\boldsymbol{l}^t_{L}\right)^{-\top}
+\text{Diag}\left(\boldsymbol{l}^{[t]}_{[L]}\right)^{-\top}
 \right) 
 = -
 \text{diag}\left(\delta \mathbf{O}^{[t]} (\mathbf{O}^{[t]})^\top \right)
-\oslash \boldsymbol{l}^t_{L}
+\oslash \boldsymbol{l}^{[t]}_{[L]}
 \\
 \\
-\delta \boldsymbol{l}^t_{[\tau-1]}
+\delta \boldsymbol{l}^{[t]}_{[\tau-1]}
 &=
 \left(
 \text{Diag}\left(\boldsymbol{m}^{\tau-1}_{[t]}\right)
 \text{Diag}\left(\boldsymbol{m}^\tau_{[t]}\right)^{-1}
 \right)^\top
-\delta \boldsymbol{l}^t_{[\tau]} 
+\delta \boldsymbol{l}^{[t]}_{[\tau]} 
 = 
 \left(
 \text{Diag}\left(\boldsymbol{m}^{\tau-1}_{[t]}\right)
@@ -321,7 +326,10 @@ $$\begin{aligned}
 \right)^\top
 \delta \mathbf{C}^{[t]}_{[\tau]}
 = 
-\exp \left(\mathbf{Q}_{[t]}\mathbf{K}_{[\tau]}^\top\right)^\top
+\left(
+\exp \left(\mathbf{Q}_{[t]}\mathbf{K}_{[\tau]}^\top\right)
+\odot \mathbf{M}
+\right)^\top
 \text{Diag}\left(\boldsymbol{m}^\tau_{[t]}\right)^{-1}
 \delta \mathbf{C}^{[t]}_{[\tau]} 
 \\
@@ -333,7 +341,7 @@ $$\begin{aligned}
 \text{Diag}\left(\boldsymbol{m}^\tau_{[t]}\right)^{-1}
 \right)^\top
 \left(
-\delta \boldsymbol{l}^t_{[\tau]} 
+\delta \boldsymbol{l}^{[t]}_{[\tau]} 
 \boldsymbol{1}^\top
 +
 \delta \mathbf{C}^{[t]}_{[\tau]} \mathbf{V}_{[\tau]}^\top
@@ -353,24 +361,19 @@ $$\begin{aligned}
 \delta \mathbf{C}^{[t]}_{[\tau]} \mathbf{V}_{[\tau]}^\top
 \\
 \\
-\delta \exp \left(\mathbf{Q}_{[t]}\mathbf{K}_{[\tau]}^\top \odot \mathbf{M}\right)
-&=
-\text{Diag}\left(\boldsymbol{m}^L_{[t]}\right)^{-1}
-\delta \mathbf{l}^{[t]}_{[L]}
-\boldsymbol{1}^\top
-+
-\text{Diag}\left(\boldsymbol{m}^\tau_{[t]}\right)^{-1}
-\delta \mathbf{C}^{[t]}_{[\tau]} \mathbf{V}_{[\tau]}^\top
-\\
-\\
 \left.\delta \mathbf{Q}_{[t]}\right|_{\text{from } \mathbf{P}_{[t],[\tau]}}
 &=
 \left(
-\delta \exp \left(\mathbf{Q}_{[t]}\mathbf{K}_{[\tau]}^\top  \odot \mathbf{M}\right) 
-\odot \exp \left(\mathbf{Q}_{[t]}\mathbf{K}_{[\tau]}^\top  \odot \mathbf{M}\right)
-\odot \mathbf{M}
+\delta \exp \left(\mathbf{Q}_{[t]}\mathbf{K}_{[\tau]}^\top\right) 
+\odot \exp \left(\mathbf{Q}_{[t]}\mathbf{K}_{[\tau]}^\top\right)
 \right) \mathbf{K}_{[\tau]}
 \\ &=
+\left(
+\text{Diag}\left(\boldsymbol{m}_{[t],\tau}\right)^{-1}
+\delta \mathbf{P}_{[t],[\tau]} \odot \mathbf{M}
+\odot \exp \left(\mathbf{Q}_{[t]}\mathbf{K}_{[\tau]}^\top\right)
+\right) \mathbf{K}_{[\tau]}
+\\&=
 \left(
 \delta \mathbf{P}_{[t],[\tau]} \odot \mathbf{P}_{[t],[\tau]}
 \right) \mathbf{K}_{[\tau]}
@@ -379,9 +382,8 @@ $$\begin{aligned}
 \left.\delta \mathbf{K}_{[\tau]}\right|_{\text{from } \mathbf{P}_{[t],[\tau]}}
 &=
 \left( 
-\delta \exp \left(\mathbf{Q}_{[t]}\mathbf{K}_{[\tau]}^\top  \odot \mathbf{M}\right) 
-\odot \exp \left(\mathbf{Q}_{[t]}\mathbf{K}_{[\tau]}^\top  \odot \mathbf{M}\right)
-\odot \mathbf{M}
+\delta \exp \left(\mathbf{Q}_{[t]}\mathbf{K}_{[\tau]}^\top\right) 
+\odot \exp \left(\mathbf{Q}_{[t]}\mathbf{K}_{[\tau]}^\top\right)
 \right) ^\top \mathbf{Q}_{[t]}
 \\ &=
 \left(
