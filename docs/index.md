@@ -9,8 +9,9 @@ Hi, I'm [MzeroMiko](https://mzeromiko.github.io). This site collects my reading 
 To replicate this setup:
 
 ```bash
-pip install mkdocs-material
-pip install mkdocs-static-i18n
+uv venv ~/venv/base --python 3.12
+source ~/venv/base/bin/activate
+uv pip install mkdocs-material mkdocs-static-i18n
 mkdocs serve
 ```
 
