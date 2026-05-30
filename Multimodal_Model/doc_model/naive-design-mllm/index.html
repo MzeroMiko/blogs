@@ -1,0 +1,2174 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://mzeromiko.github.io/blogs/Multimodal_Model/doc_model/naive-design-mllm/">
+      
+      
+        <link rel="prev" href="../../">
+      
+      
+      
+        
+          <link rel="alternate" href="./" hreflang="en">
+        
+          <link rel="alternate" href="../../../zh/Multimodal_Model/doc_model/naive-design-mllm/" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>A Naive Design of Interleaved Multimodal Models for Document Understanding and Generation - Reading Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans+SC:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Noto Sans SC";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#a-naive-design-of-interleaved-multimodal-models-for-document-understanding-and-generation" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Reading Notes" class="md-header__button md-logo" aria-label="Reading Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 2-5 4.5v11l5-4.5zM6.5 5C4.55 5 2.45 5.4 1 6.5v14.66c0 .25.25.5.5.5.1 0 .15-.07.25-.07 1.35-.65 3.3-1.09 4.75-1.09 1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.31 4.75 1.06.1.05.15.03.25.03.25 0 .5-.25.5-.5V6.5c-.6-.45-1.25-.75-2-1V19c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V6.5C10.55 5.4 8.45 5 6.5 5"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Reading Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              A Naive Design of Interleaved Multimodal Models for Document Understanding and Generation
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Dark Mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Dark Mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Light Mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Light Mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../zh/Multimodal_Model/doc_model/naive-design-mllm/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+    <a href="https://mzeromiko.github.io" title="Personal Homepage" class="md-header__button md-icon" target="_blank" rel="noopener">
+      <svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"><g fill-rule="evenodd"><path d="M357 124l-3 6-42 43-42 42v105c2 8 8 13 15 15h58c7-3 13-8 14-16V124" fill="#bc22f3"/><path d="M41 219l1 99c1 8 7 15 15 17h57c7-1 12-7 14-14l1-2V215l-42-42c-45-45-43-43-44-47a23 23 0 0 1-1-3c-1-1-1 1-1 96m271-46l-42 42 42-42" fill="#e32a77"/><path d="M93 65c-2 0-5 1-7 3l-41 39c-3 4-4 11-3 15v2l3 6 104 104c-5-6-5-14 0-21l26-26 25-26-45-44-47-47c-4-4-10-6-15-5" fill="#34e3bb"/><path d="M301 65l-8 3-144 145c-5 7-4 15 0 21 1 3 37 38 39 40 8 5 17 4 24-1l143-144c4-6 4-14-1-21l-41-40c-3-3-8-4-12-3" fill="#fbdb04"/><path d="M145 223l1 1a13 13 0 0 0 0-1h-1" fill="#6c9c9c"/></g></svg>
+    </a>
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Reading Notes" class="md-nav__button md-logo" aria-label="Reading Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 2-5 4.5v11l5-4.5zM6.5 5C4.55 5 2.45 5.4 1 6.5v14.66c0 .25.25.5.5.5.1 0 .15-.07.25-.07 1.35-.65 3.3-1.09 4.75-1.09 1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.31 4.75 1.06.1.05.15.03.25.03.25 0 .5-.25.5-.5V6.5c-.6-.45-1.25-.75-2-1V19c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V6.5C10.55 5.4 8.45 5 6.5 5"/></svg>
+
+    </a>
+    Reading Notes
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Intro
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../Linear_Attention/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Linear Attention
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Linear Attention
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0. flash attn
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    0. flash attn
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../Linear_Attention/0.%20flash_attn/flashattn/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The Hidden Recurrence in Softmax Attention: A Path to Flash Attention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1. retnet
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    1. retnet
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../Linear_Attention/1.%20retnet/retnet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading Notes: RetNet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2. gated linear attention
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    2. gated linear attention
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../Linear_Attention/2.%20gated_linear_attention/gla-fla/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading Notes: Implementation Notes for GLA in FLA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../Linear_Attention/2.%20gated_linear_attention/gla/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading Notes: Gated Linear Attention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3. deltanet
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    3. deltanet
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../Linear_Attention/3.%20deltanet/deltanet-backward/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading Notes: Backward Pass for DeltaNet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../Linear_Attention/3.%20deltanet/deltanet-fla/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading Notes: Implementation Notes for DeltaNet in FLA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../Linear_Attention/3.%20deltanet/deltanet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading Notes: DeltaNet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_6" id="__nav_2_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    4. gated deltanet
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    4. gated deltanet
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../Linear_Attention/4.%20gated_deltanet/gdn-backward/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading Notes: Backward Pass for Gated DeltaNet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../Linear_Attention/4.%20gated_deltanet/gdn-fla/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading Notes: Implementation Notes for GDN in FLA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../Linear_Attention/4.%20gated_deltanet/gdn/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading Notes: Gated Delta Networks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_7" id="__nav_2_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    5. kimi linear
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    5. kimi linear
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../Linear_Attention/5.%20kimi_linear/kda-backward/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading Notes: Backward Pass for Kimi Delta Attention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../Linear_Attention/5.%20kimi_linear/kda-fla/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading Notes: Implementation Notes for KDA in FLA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../Linear_Attention/5.%20kimi_linear/kda/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading Notes: Kimi Delta Attention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_8" id="__nav_2_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    6. DPLR
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    6. DPLR
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../Linear_Attention/6.%20DPLR/dplr/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading Notes: Diagonal Plus Low Rank
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multimodal Model
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Multimodal Model
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Doc model
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Doc model
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    A Naive Design of Interleaved Multimodal Models for Document Understanding and Generation
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    A Naive Design of Interleaved Multimodal Models for Document Understanding and Generation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Introduction
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Introduction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-vision-tokenizer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Vision Tokenizer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-overall-framework" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Overall Framework
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Data">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#data-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Format
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-source" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Source
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multi-head-vision-tokenizer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multi-Head Vision Tokenizer
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#combined-vocabulary-representation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Combined Vocabulary Representation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mixed-target-cross-entropy-loss" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mixed-Target Cross-Entropy Loss
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#attention-masking-paradigms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attention Masking Paradigms
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Attention Masking Paradigms">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#strategy-a-pure-next-token-prediction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strategy A: Pure Next-Token Prediction
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strategy-b-hybrid-next-block-prediction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strategy B: Hybrid Next-Block Prediction
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#future-vision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Future Vision
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Introduction
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Introduction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-vision-tokenizer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Vision Tokenizer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-overall-framework" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Overall Framework
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Data">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#data-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Format
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-source" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Source
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multi-head-vision-tokenizer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multi-Head Vision Tokenizer
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#combined-vocabulary-representation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Combined Vocabulary Representation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mixed-target-cross-entropy-loss" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mixed-Target Cross-Entropy Loss
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#attention-masking-paradigms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attention Masking Paradigms
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Attention Masking Paradigms">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#strategy-a-pure-next-token-prediction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strategy A: Pure Next-Token Prediction
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#strategy-b-hybrid-next-block-prediction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strategy B: Hybrid Next-Block Prediction
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#future-vision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Future Vision
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="a-naive-design-of-interleaved-multimodal-models-for-document-understanding-and-generation">A Naive Design of Interleaved Multimodal Models for Document Understanding and Generation<a class="headerlink" href="#a-naive-design-of-interleaved-multimodal-models-for-document-understanding-and-generation" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p><strong>Comments:</strong> This technical memoir is a retrospective on the design of a native, interleaved image-text large multimodal model developed in 2024 （during my internship in MSRA）. This document formalizes part of the engineering decisions, empirical observations, and mathematical optimizations implemented during the project. The architectures described below may introduce novel ideas or simply leverage methodologies existing in or before 2024. As a personal retrospective, formal citations are omitted, but we express our deepest appreciation for the incredible pioneering work done by the community.</p>
+</blockquote>
+<h2 id="introduction">Introduction<a class="headerlink" href="#introduction" title="Permanent link">&para;</a></h2>
+<p>The core objective of this project was to implement a natively unified multimodal architecture that capable of both writing words into images and reading content from them. Rather than treating visual data as auxiliary continuous embeddings injected into a language model, this approach unifies the input streams by merging discrete text vocabularies with quantized vision codebooks into a single, combined vocabulary. </p>
+<h3 id="the-vision-tokenizer">The Vision Tokenizer<a class="headerlink" href="#the-vision-tokenizer" title="Permanent link">&para;</a></h3>
+<p><img alt="" src="../assets/Pasted%20image%2020260526010029.png" /></p>
+<h3 id="the-overall-framework">The Overall Framework<a class="headerlink" href="#the-overall-framework" title="Permanent link">&para;</a></h3>
+<p><img alt="" src="../assets/Pasted%20image%2020260526010309.png" /></p>
+<hr />
+<h2 id="data">Data<a class="headerlink" href="#data" title="Permanent link">&para;</a></h2>
+<h3 id="data-format">Data Format<a class="headerlink" href="#data-format" title="Permanent link">&para;</a></h3>
+<p>To train an interleaved document-level model capable of parsing and understanding layout structures, spatial topology must be passed directly to the language model. We experimented with two distinct data formatting paradigms to teach the model how to auto-regressively generate bounding boxes and layout configurations.</p>
+<p><strong>Format A: Explicit Spatial Anchoring (With Bounding Boxes)</strong> To explicitly guide document layout parsing, textual segments are bounded by structural tags paired with absolute, normalized coordinates:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>&lt;para&gt;&lt;box&gt;&lt;size{x1}&gt;&lt;size{y1}&gt;&lt;size{x2}&gt;&lt;size{y2}&gt;&lt;/box&gt;It&#39;s a good day...&lt;/para&gt;... &lt;image&gt;&lt;size&gt;&lt;size{w}&gt;&lt;size{h}&gt;&lt;/size&gt;&lt;image_pad1&gt;...&lt;/image&gt;&lt;para&gt;...
+</code></pre></div>
+<p><strong>Format B: Implicit Spatial Inference (Without Bounding Boxes)</strong> This format strips structural coordinates, tasking the model's internal hidden states with learning spatial layout dependencies implicitly:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>&lt;para&gt;It&#39;s a good day...&lt;/para&gt;... &lt;image&gt;&lt;size&gt;&lt;size{w}&gt;&lt;size{h}&gt;&lt;/size&gt;&lt;image_pad1&gt;...&lt;/image&gt;&lt;para&gt;...
+</code></pre></div>
+<p>However, attempting to force a compact 2B backbone model to learn both data formats concurrently proved overly ambitious, introducing excessive variance that hindered convergence. Consequently, we standardized completely on <strong>Format A</strong> to provide strict layout constraints.</p>
+<h3 id="data-source">Data Source<a class="headerlink" href="#data-source" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p><strong>The arXiv Corpus:</strong> An OCR-centric dataset containing dense page layouts. Text content is strictly aligned with ground-truth bounding boxes, mapping semantic units directly to their spatial positions on the corresponding page images.</p>
+</li>
+<li>
+<p><strong>The Synthetic Dataset:</strong> To enhance layout robustness, raw text extracted from <em>FineWeb</em> was compiled into clean, white-paper PDF layouts via <code>PyMuPDF (fitz)</code>. Synthesized documents utilized randomized font families, sizes, weights, and color configurations to expand data diversity.</p>
+</li>
+</ul>
+<hr />
+<h2 id="multi-head-vision-tokenizer">Multi-Head Vision Tokenizer<a class="headerlink" href="#multi-head-vision-tokenizer" title="Permanent link">&para;</a></h2>
+<p>When developing the discrete visual tokenizer, we established three core empirical observations:</p>
+<ol>
+<li>
+<p><strong>Reconstruction Degradation:</strong> Utilizing overly large visual patch dimensions significantly degrades spatial reconstruction quality and removes fine-grained details.</p>
+</li>
+<li>
+<p><strong>Semantic Fragmenting:</strong> Overly localized, hyper-granular patches fail to capture unified semantic meaning. Such patches often contain nothing more than meaningless local curves, making it difficult for the model to extract high-level semantic concepts.</p>
+</li>
+<li>
+<p><strong>Embedding Dimensional Mismatch:</strong> The natural hidden dimensionality (width) of native vision codebooks is narrower than the expansive text embedding space of LLMs.</p>
+</li>
+</ol>
+<p>To resolve these trade-offs, we designed a <strong>Multi-Head Vision Tokenizer</strong>. </p>
+<p>Instead of forcing a visual patch into a single integer index within an enormous discrete vocabulary, a wide spatial patch rich in global semantics is projected through <span class="arithmatex">\(G\)</span> distinct linear heads. Each individual head points to its own discrete allocation pool within an overall image codebook matrix. This produces a composite integer vector <span class="arithmatex">\(\boldsymbol{t} \in \mathbb{R}^{G}\)</span> per visual patch, binding multiple integers to a single patch to ensure high-fidelity reconstruction.</p>
+<p>To address the third observation (embedding width mismatch), the projection heads are merged and projected into the unified high-dimensional hidden space of the backbone model, which in our setup was <strong>Gemma-2 2B</strong>.</p>
+<p>To tailor the performance specifically for document generation, we incorporated a diverse combination of auxiliary loss functions during tokenizer training.</p>
+<hr />
+<h2 id="combined-vocabulary-representation">Combined Vocabulary Representation<a class="headerlink" href="#combined-vocabulary-representation" title="Permanent link">&para;</a></h2>
+<p>The vocabulary structure simply appends the <span class="arithmatex">\(G \times \text{codebook}\)</span> entries directly behind the pre-existing text vocabulary. Sequence targets are uniformly represented by a sequence of vectors <span class="arithmatex">\(\boldsymbol{t} \in \mathbb{R}^{G}\)</span>:
+* <strong>For Image Tokens:</strong> The <span class="arithmatex">\(G \times \text{integers}\)</span> in <span class="arithmatex">\(\boldsymbol{t}\)</span> map to their respective indices in the <span class="arithmatex">\(G\)</span> split image codebooks. The corresponding embedding of those <span class="arithmatex">\(G\)</span> ids would get merged and projected into a single embedding. 
+* <strong>For Text Tokens:</strong> For computing convenience, the <span class="arithmatex">\(G \times \text{integers}\)</span> in <span class="arithmatex">\(\boldsymbol{t}\)</span> are duplicated to carry the exact same number, representing the standard <code>token_id</code> within the language vocabulary.  In the text embedding layer, only a single token ID is actively used to bind and retrieve the language embedding.</p>
+<p>This unified vocabulary layout prevents modality-specific isolation during training. Deliberately isolating image optimization from text optimization distorts the next-token probability distribution, breaking the multimodal synergy we want the transformer to learn natively.</p>
+<p>To clarify, we hypothesize that a primary reason for the sub-optimal vision performance in some models developed in and before 2024 is the inability to preserve the subtle distinctions between visual tokens and textual tokens. In our design, they are purposely treated as distinct entities. </p>
+<p>To use an analogy within language itself: words like "sparrow," "eagle," and "penguin" all fall under the broad category of "bird," yet they occupy distinct, parallel positions in the embedding space as unique entities. </p>
+<p>Following this logic, concepts extracted from images should not be forcibly collapsed into existing text coordinates. Instead, the visual "bird" and the textual "bird" should behave like two different species within the same conceptual family, coexisting as parallel synonyms separated by subtle semantic boundaries, with their exact geometric relationships left for the model and data to dynamically determine.</p>
+<hr />
+<h2 id="mixed-target-cross-entropy-loss">Mixed-Target Cross-Entropy Loss<a class="headerlink" href="#mixed-target-cross-entropy-loss" title="Permanent link">&para;</a></h2>
+<p>Given a vocabulary set <span class="arithmatex">\(\mathcal{V}\)</span>, true distribution probability <span class="arithmatex">\(p_t\)</span>, and predicted logit configurations <span class="arithmatex">\(l_t\)</span>, standard cross-entropy loss with one-hot targets simplifies to tracking the active positive token:</p>
+<div class="arithmatex">\[\begin{aligned}
+\mathcal{L}_{\text{CE}} &amp;= -\sum_{t \in \mathcal{V}} p_t \log(q_t) \\
+&amp;= -\sum_{t \in \mathcal{V}} p_t \log\left(\frac{\exp(l_t)}{\sum_{i \in \mathcal{V}} \exp(l_i)}\right) \\
+&amp;= \sum_{t \in \mathcal{V}} p_t \left(\log\sum_{i \in \mathcal{V}} \exp(l_i) - l_t\right) \\
+&amp;= \log\sum_{i \in \mathcal{V}} \exp(l_i) - \sum_{t \in \mathcal{V}} p_t l_t
+\end{aligned}\]</div>
+<p>The gradient propagation is formulated as:</p>
+<div class="arithmatex">\[\frac{\partial \mathcal{L}_{\text{CE}}}{\partial l_i} = \frac{\exp(l_i)}{\sum_{j \in \mathcal{V}} \exp(l_j)} - p_i\]</div>
+<p>When dealing with non-one-hot targets, standard implementations introduce full dense multiplications between huge vectors <span class="arithmatex">\(\boldsymbol{p} \in \mathbb{R}^{|\mathcal{V}|}\)</span> and <span class="arithmatex">\(\boldsymbol{l} \in \mathbb{R}^{|\mathcal{V}|}\)</span>, causing severe memory overhead. </p>
+<p>To optimize this, we restrict target tracking strictly to a sparse subset index space <span class="arithmatex">\(\mathcal{G} \subseteq \mathcal{V}\)</span> via <code>torch.gather</code>:</p>
+<div class="arithmatex">\[\mathcal{L}_{\text{CE}} = \log\sum_{i \in \mathcal{V}} \exp(l_i) - \sum_{t \in \mathcal{G}} p_t l_t\]</div>
+<p>To scale execution, the global vocabulary logits are partitioned across <span class="arithmatex">\(N\)</span> physical accelerator cards. On a given card <span class="arithmatex">\(k\)</span> managing local partition <span class="arithmatex">\(\mathcal{V}^k\)</span>, distributed reductions are calculated as follows:</p>
+<div class="arithmatex">\[\begin{aligned}
+\mathcal{L}_{\text{CE, neg}}^{k} &amp;= \sum_{i \in \mathcal{V^k}} \exp(l_i) ,\quad \mathcal{L}_{\text{CE, neg}} = \log\sum_{k} \mathcal{L}_{\text{CE, neg}}^{k} \\
+\mathcal{L}_{\text{CE, pos}}^{k} &amp;= \sum_{t \in \mathcal{G} \cap \mathcal{V^k} } p_t l_t ,\quad \mathcal{L}_{\text{CE, pos}} = \sum_{k}\mathcal{L}_{\text{CE, pos}}^{k} \\
+\mathcal{L}_{\text{CE}} &amp;= \mathcal{L}_{\text{CE, neg}} - \mathcal{L}_{\text{CE, pos}}
+\end{aligned}\]</div>
+<p>During the backward pass, we precompute and cache the global softmax states <span class="arithmatex">\(S(l_i) = \exp(l_i) / \sum_{k}\mathcal{L}_{\text{CE, neg}}^{k}\)</span> inside the forward pass to avoid redundant activation materialization. We then apply <code>torch.gather</code> to extract only the active items within <span class="arithmatex">\(S(l_i)\)</span>, subtract the target probabilities <span class="arithmatex">\(p_i\)</span>, and use an inplace <code>scatter</code> operation to populate the gradients, bypassing full tensor allocation.</p>
+<hr />
+<h2 id="attention-masking-paradigms">Attention Masking Paradigms<a class="headerlink" href="#attention-masking-paradigms" title="Permanent link">&para;</a></h2>
+<p>We explored two distinct autoregressive sequence-masking strategies to manage text-image interleaving.</p>
+<h3 id="strategy-a-pure-next-token-prediction">Strategy A: Pure Next-Token Prediction<a class="headerlink" href="#strategy-a-pure-next-token-prediction" title="Permanent link">&para;</a></h3>
+<p>The first choice applies standard causal Next-Token Prediction uniformly across all modalities. It processes text and discrete image tokens within a single unified sequence, treating image indices exactly like standard text tokens. This forces the model to learn modality shifts entirely on its own. Due to its robustness and engineering simplicity, this strategy was chosen in this project.</p>
+<h3 id="strategy-b-hybrid-next-block-prediction">Strategy B: Hybrid Next-Block Prediction<a class="headerlink" href="#strategy-b-hybrid-next-block-prediction" title="Permanent link">&para;</a></h3>
+<p>The alternative paradigm enforces standard sequential NTP for text segments while transitioning to parallelized block generation for image regions. </p>
+<p>When the model encounters the layout tag <code>&lt;image&gt;&lt;size&gt;&lt;size{w}&gt;&lt;size{h}&gt;&lt;/size&gt;</code>, it triggers a shift into image mode for the subsequent <span class="arithmatex">\(w \times h\)</span> tokens. The causal attention matrix is modified to allow parallel block extraction.</p>
+<p>The attention mask layout follows this causal structure:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">AttnMask</th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><code>&lt;size{h}&gt;</code></td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>&lt;/size&gt;</code></td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>&lt;p1&gt;</code></td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>&lt;p2&gt;</code></td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>&lt;p3&gt;</code></td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>&lt;/image&gt;</code></td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr>
+<td style="text-align: center;"><code>&lt;para&gt;</code></td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">1</td>
+</tr>
+<tr>
+<td style="text-align: center;"><strong>Q / K</strong></td>
+<td style="text-align: center;"><code>&lt;size{h}&gt;</code></td>
+<td style="text-align: center;"><code>&lt;/size&gt;</code></td>
+<td style="text-align: center;"><code>&lt;p1&gt;</code></td>
+<td style="text-align: center;"><code>&lt;p2&gt;</code></td>
+<td style="text-align: center;"><code>&lt;p3&gt;</code></td>
+<td style="text-align: center;"><code>&lt;/image&gt;</code></td>
+<td style="text-align: left;"><code>&lt;para&gt;</code></td>
+</tr>
+</tbody>
+</table>
+<p>Under this block-masking setup, prediction targets shift as follows:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Prediction</th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+<th style="text-align: center;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><strong>Source</strong></td>
+<td style="text-align: center;"><code>&lt;size{h}&gt;</code></td>
+<td style="text-align: center;"><code>&lt;/size&gt;</code></td>
+<td style="text-align: center;"><code>MASK</code></td>
+<td style="text-align: center;"><code>MASK</code></td>
+<td style="text-align: center;"><code>MASK</code></td>
+<td style="text-align: center;"><code>&lt;/image&gt;</code></td>
+<td style="text-align: center;"><code>&lt;para&gt;</code></td>
+</tr>
+<tr>
+<td style="text-align: center;"><strong>Target</strong></td>
+<td style="text-align: center;"><code>&lt;/size&gt;</code></td>
+<td style="text-align: center;"><code>NULL</code></td>
+<td style="text-align: center;"><code>&lt;p1&gt;</code></td>
+<td style="text-align: center;"><code>&lt;p2&gt;</code></td>
+<td style="text-align: center;"><code>&lt;p3&gt;</code></td>
+<td style="text-align: center;"><code>&lt;para&gt;</code></td>
+<td style="text-align: center;"><code>NEXT</code></td>
+</tr>
+</tbody>
+</table>
+<p>While this hybrid approach deviates from our core belief that all tokens should remain perfectly equal and uniform within the unified embedding space, it provides a highly compelling framework for parallelized visual synthesis.</p>
+<h2 id="future-vision">Future Vision<a class="headerlink" href="#future-vision" title="Permanent link">&para;</a></h2>
+<p>Looking back from the vantage point of 2026, the architectural limitations of our 2024 design are somewhat naive. Moving toward a latent multimodal language model would undoubtedly yield superior representation and generation quality. </p>
+<p>Yet, beneath these limitations lies a vast, unexplored design space that points toward a fundamentally different path.  We believe biomimicry remains a highly compelling alternative path for multimodal architecture. Human vision does not process the world by throwing massive, high-resolution pixel matrices into a static attention window; instead, it relies on a continuous, low-resolution video stream combined with active, intent-driven scanning. </p>
+<p>This inspires the concept of the <strong>Glimpse Model</strong>, an active-perception architecture defined by three core components: </p>
+<ol>
+<li>
+<p><strong>A Fixed-Resolution Encoder:</strong> An encoder (or tokenizer) locked into a static, unchanging resolution, allowing the underlying hardware and attention kernels to be aggressively over-optimized.  For example, visual inputs are encoded into an autoregressive information flow with a strictly fixed sequence length, ensuring a more seamless alignment with the text-based <strong>concept backbone</strong>.</p>
+</li>
+<li>
+<p><strong>A Crop-and-Resize Engine:</strong> An execution tool controlled directly by the LLM backbone's action tokens. It acts as a digital "fovea," slicing specific high-resolution regions of interest from the raw input and normalizing them to feed back into the fixed encoder.</p>
+</li>
+<li>
+<p><strong>A Resized Global View:</strong> A heavily downsampled, blurred abstraction of the entire visual field. This serves as the model’s "peripheral vision," providing persistent spatial and topological context without bloating the sequence memory. Ultimately, the model itself decides where to look, when to look, and what to focus on. </p>
+</li>
+</ol>
+<p>We hope that someday, an elegant Glimpse Model will emerge from the community and fundamentally redefine how AI conquers the vision task.</p>
+
+
+
+
+
+
+
+
+
+
+
+<style>
+  .md-comments {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--md-default-fg-color--lightest);
+  }
+
+  .md-comments__heading {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1.5rem;
+    color: var(--md-default-fg-color--light);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .md-comments__heading-bar {
+    display: inline-block;
+    width: 3px;
+    height: 1em;
+    background-color: var(--md-primary-fg-color);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .md-comments__heading-line {
+    flex: 1;
+    height: 1px;
+    background: var(--md-default-fg-color--lightest);
+  }
+
+  .md-comments__body {
+    padding: 1.5rem;
+  }
+</style>
+
+<div class="md-comments">
+  <div class="md-comments__heading">
+    <span class="md-comments__heading-bar"></span>
+    <span>Comments</span>
+    <span class="md-comments__heading-line"></span>
+  </div>
+
+  <div class="md-comments__body">
+  <script src="https://giscus.app/client.js"
+          data-repo="mzeromiko/blogs"
+          data-repo-id="R_kgDOR12rgw"
+          data-category="Announcements"
+          data-category-id="DIC_kwDOR12rg84C5s_Q"
+          data-mapping="pathname"
+          data-strict="0"
+          data-reactions-enabled="1"
+          data-emit-metadata="0"
+          data-input-position="bottom"
+          data-theme="preferred_color_scheme"
+          data-lang="en"
+          crossorigin="anonymous"
+          async>
+  </script>
+  </div>
+</div>
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.toc", "navigation.sections", "navigation.expand", "navigation.top", "navigation.indexes", "toc.follow", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
